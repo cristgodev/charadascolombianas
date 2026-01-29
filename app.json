@@ -21,8 +21,31 @@
         "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true,
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "permissions": [
+        "android.permission.CAMERA",
+        "android.permission.RECORD_AUDIO",
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.WRITE_EXTERNAL_STORAGE"
+      ]
     },
+    "plugins": [
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Necesitamos acceso a la cámara para grabar a tus amigos actuando.",
+          "microphonePermission": "Necesitamos acceso al micrófono para grabar las risas."
+        }
+      ],
+      [
+        "expo-media-library",
+        {
+          "photosPermission": "Necesitamos acceso a tu galería para guardar los videos de recuerdo.",
+          "savePhotosPermission": "Necesitamos acceso para guardar los videos de las partidas."
+        }
+      ],
+      "expo-screen-orientation"
+    ],
     "web": {
       "favicon": "./assets/favicon.png"
     }

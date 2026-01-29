@@ -1,0 +1,126 @@
+import React, { forwardRef, useImperativeHandle, useState, useEffect, useRef } from 'react';
+import { View, StyleSheet, Platform } from 'react-native';
+import { CameraView, useCameraPermissions, useMicrophonePermissions } from 'expo-camera';
+import * as MediaLibrary from 'expo-media-library';
+
+export interface CameraManagerHandle {
+    startRecording: () => Promise<void>;
+    stopRecording: () => Promise<string | null>;
+}
+
+interface CameraManagerProps {
+    onRecordingStart?: () => void;
+    onRecordingFinished?: (uri: string) => void;
+}
+
+export const CameraManager = forwardRef<CameraManagerHandle, CameraManagerProps>((props, ref) => {
+    const [cameraPermission, requestCameraPermission] = useCameraPermissions();
+    const [microphonePermission, requestMicrophonePermission] = useMicrophonePermissions();
+    const [mediaLibPermission, requestMediaLibPermission] = MediaLibrary.usePermissions();
+
+    const cameraRef = useRef<CameraView>(null);
+    const [isRecording, setIsRecording] = useState(false);
+
+    const onRecordingFinishedRef = useRef(props.onRecordingFinished);
+    const onRecordingStartRef = useRef(props.onRecordingStart);
+
+    useEffect(() => {
+        onRecordingFinishedRef.current = props.onRecordingFinished;
+        onRecordingStartRef.current = props.onRecordingStart;
+    });
+
+    useEffect(() => {
+        (async () => {
+            if (!cameraPermission?.granted) await requestCameraPermission();
+            if (!microphonePermission?.granted) await requestMicrophonePermission();
+            if (!mediaLibPermission?.granted) await requestMediaLibPermission();
+        })();
+    }, []);
+
+    const [isCameraReady, setIsCameraReady] = useState(false);
+    const pendingRecordingRef = useRef(false);
+
+    useImperativeHandle(ref, () => ({
+        startRecording: async () => {
+            // If camera is ready, start immediately
+            if (isCameraReady && cameraRef.current && !isRecording) {
+                await startRecordingInternal();
+            } else {
+                // Otherwise queue it
+                pendingRecordingRef.current = true;
+                console.log("Camera not ready, queuing startRecording...");
+            }
+        },
+        stopRecording: async () => {
+            pendingRecordingRef.current = false; // Cancel pending
+            if (cameraRef.current && isRecording) {
+                cameraRef.current.stopRecording();
+            }
+            return null;
+        }
+    }));
+
+    const startRecordingInternal = async () => {
+        try {
+            if (!cameraRef.current) return;
+
+            setIsRecording(true);
+            onRecordingStartRef.current?.();
+
+            const data = await cameraRef.current.recordAsync({
+                maxDuration: 120,
+            });
+
+            if (data?.uri) {
+                onRecordingFinishedRef.current?.(data.uri);
+            }
+            setIsRecording(false);
+        } catch (error) {
+            console.error("Recording failed", error);
+            setIsRecording(false);
+        }
+    };
+
+    const handleCameraReady = () => {
+        console.log("Camera is ready!");
+        setIsCameraReady(true);
+        if (pendingRecordingRef.current) {
+            pendingRecordingRef.current = false;
+            startRecordingInternal();
+        }
+    };
+
+    if (!cameraPermission?.granted || !microphonePermission?.granted) {
+        return null;
+    }
+
+    return (
+        <View style={styles.container}>
+            <CameraView
+                ref={cameraRef}
+                style={styles.camera}
+                facing="back"
+                mode="video"
+                mute={false}
+                onCameraReady={handleCameraReady}
+            />
+        </View>
+    );
+});
+
+const styles = StyleSheet.create({
+    container: {
+        // Hidden camera trick: 1x1 pixel or hidden behind content
+        width: 1,
+        height: 1,
+        overflow: 'hidden',
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        opacity: 0, // Opacity 0 might prevent rendering on some Androids, but usually works for CameraView. 
+        // Better approach: make it 1x1 and transparent or Z-index -1
+    },
+    camera: {
+        flex: 1,
+    }
+});
