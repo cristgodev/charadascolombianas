@@ -19,18 +19,19 @@ export const VideoReviewScreen = ({ navigation, route }: any) => {
 
     const handleSave = async () => {
         try {
-            const { status } = await MediaLibrary.requestPermissionsAsync();
+            const { status } = await MediaLibrary.requestPermissionsAsync(true); // writeOnly = true
             if (status !== 'granted') {
                 Alert.alert("Permiso denegado", "Necesitamos permiso para guardar el video en tu galería.");
                 return;
             }
 
             const asset = await MediaLibrary.createAssetAsync(videoUri);
-            await MediaLibrary.createAlbumAsync("CharadesApp", asset, false);
+            // Pass true to copy the asset instead of moving it. This is safer on Android.
+            await MediaLibrary.createAlbumAsync("CharadesApp", asset, true);
             Alert.alert("¡Guardado!", "El video se ha guardado en tu galería.");
-        } catch (error) {
-            console.error(error);
-            Alert.alert("Error", "No se pudo guardar el video.");
+        } catch (error: any) {
+            console.error("Save error:", error);
+            Alert.alert("Error", `No se pudo guardar el video. ${error.message || ''}`);
         }
     };
 
@@ -45,7 +46,7 @@ export const VideoReviewScreen = ({ navigation, route }: any) => {
                 style={styles.video}
                 source={{ uri: videoUri }}
                 useNativeControls
-                resizeMode={ResizeMode.COVER}
+                resizeMode={ResizeMode.CONTAIN}
                 isLooping
                 onPlaybackStatusUpdate={status => setStatus(() => status)}
             />
@@ -89,7 +90,8 @@ const styles = StyleSheet.create({
     video: {
         flex: 1,
         width: '100%',
-        height: '100%',
+        height: '80%', // Leave space for controls/header? Or just let Contain handle it.
+        // CONTAIN will center it naturally in flex:1 container
     },
     overlay: {
         ...StyleSheet.absoluteFillObject,

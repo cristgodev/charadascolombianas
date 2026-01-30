@@ -154,15 +154,20 @@ export const GameScreen = ({ navigation, route }: any) => {
     }
 
     return (
-        <Container centered style={[
-            styles.container,
-            tilt === 'DOWN' ? styles.bgCorrect : {}, // Visual feedback reversed
-            tilt === 'UP' ? styles.bgPass : {}
-        ] as any}>
+        <Container centered style={styles.container}>
             <CameraManager
                 ref={cameraRef}
                 onRecordingFinished={onRecordingFinished}
             />
+            {/* Overlay Gradient for readability could be added here */}
+            {/* Overlay Gradient for readability could be added here */}
+            <View style={{
+                ...StyleSheet.absoluteFillObject,
+                backgroundColor: tilt === 'DOWN' ? 'rgba(46, 204, 113, 0.6)' : // Green
+                    tilt === 'UP' ? 'rgba(231, 76, 60, 0.6)' :   // Red
+                        'rgba(0,0,0,0.3)' // Default dark tint
+            }} />
+
             <TouchableOpacity style={styles.exitButton} onPress={exitGame}>
                 <AppText style={styles.exitButtonText}>Salir</AppText>
             </TouchableOpacity>
@@ -187,14 +192,16 @@ export const GameScreen = ({ navigation, route }: any) => {
                     <AppText style={styles.timer}>{timeLeft}s</AppText>
                     <AppText style={styles.counter}>{wordsAnswered}/10</AppText>
                     <View style={styles.wordContainer}>
-                        <AppText
-                            variant="header"
-                            style={styles.word}
-                            adjustsFontSizeToFit
-                            numberOfLines={3}
-                        >
-                            {words[wordIndex]}
-                        </AppText>
+                        <View style={styles.wordCard}>
+                            <AppText
+                                variant="header"
+                                style={styles.word}
+                                adjustsFontSizeToFit
+                                numberOfLines={3}
+                            >
+                                {words[wordIndex]}
+                            </AppText>
+                        </View>
                     </View>
                     <AppText style={styles.instruction}>
                         {readyForAction ? "Abajo: ¡Eso! / Arriba: Paso" : "Vuelve al centro"}
@@ -212,11 +219,12 @@ const styles = StyleSheet.create({
     container: {
         // dynamic bg colors will be applied via style props
     },
-    bgCorrect: {
-        backgroundColor: '#2ecc71', // Vivid Green
-    },
-    bgPass: {
-        backgroundColor: '#e74c3c', // Passion Red
+    wordCard: {
+        padding: 20,
+        borderRadius: 20,
+        // backgroundColor: 'rgba(0,0,0,0.5)', // Removed bg
+        width: '100%',
+        alignItems: 'center',
     },
     timer: {
         fontSize: 40,

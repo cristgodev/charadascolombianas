@@ -9,6 +9,7 @@ import { ResultsScreen } from '../screens/ResultsScreen';
 import { SettingsScreen } from '../screens/SettingsScreen';
 import { WordPreviewScreen } from '../screens/WordPreviewScreen';
 import { VideoReviewScreen } from '../screens/VideoReviewScreen';
+import { CreateCategoryScreen } from '../screens/CreateCategoryScreen';
 import { useTheme } from '../context/ThemeContext';
 
 const Stack = createStackNavigator();
@@ -44,6 +45,7 @@ export const AppNavigator = () => {
                 <Stack.Screen name="Game" component={GameScreen} />
                 <Stack.Screen name="Results" component={ResultsScreen} />
                 <Stack.Screen name="VideoReview" component={VideoReviewScreen} />
+                <Stack.Screen name="CreateCategory" component={CreateCategoryScreen} />
                 <Stack.Screen name="Settings" component={SettingsScreen} />
             </Stack.Navigator>
         </NavigationContainer>

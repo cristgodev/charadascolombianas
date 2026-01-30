@@ -29,7 +29,7 @@ export const ResultsScreen = ({ navigation, route }: any) => {
             <Button
                 title="🔄 Jugar Otra Vez"
                 onPress={() => navigation.navigate('CategorySelection')}
-                style={{ width: '80%', marginTop: 40 }}
+                style={{ width: '80%', marginTop: 24, marginBottom: 16 }}
             />
 
             <Button

@@ -1,112 +1,65 @@
 import React from 'react';
-import { View, StyleSheet, TouchableOpacity } from 'react-native';
-import { Container, AppText, Button } from '../components';
+import { View, StyleSheet, TouchableOpacity, ImageBackground, Dimensions } from 'react-native';
+import { Container, AppText } from '../components';
+
+const { width, height } = Dimensions.get('window');
 
 export const HomeScreen = ({ navigation }: any) => {
     return (
-        <Container style={styles.container}>
-            <View style={styles.header}>
-                <AppText variant="display" color="#FFD700" centered>CHARADAS</AppText>
-                <AppText variant="subheader" centered style={styles.subtitle}>La Fiesta en tu Bolsillo 🇨🇴</AppText>
-            </View>
-
-            <View style={styles.menu}>
+        <ImageBackground
+            source={require('../../assets/home-bg.png')}
+            style={styles.background}
+            resizeMode="stretch"
+        >
+            <Container noPadding style={styles.overlayContainer}>
+                {/* 
+                    Invisible touch area for "Play".
+                    Takes up the majority of the bottom width (Left/Center).
+                */}
                 <TouchableOpacity
-                    style={[styles.card, styles.playCard]}
+                    style={styles.invisiblePlayArea}
                     onPress={() => navigation.navigate('CategorySelection')}
-                    activeOpacity={0.9}
-                >
-                    <AppText variant="display" style={styles.cardIcon}>🎮</AppText>
-                    <AppText variant="header" style={styles.cardTitle}>¡A JUGAR!</AppText>
-                    <AppText variant="body" style={styles.cardDesc}>Modo Clásico y Fiesta</AppText>
-                </TouchableOpacity>
+                    activeOpacity={0.5}
+                />
 
-                <View style={styles.row}>
-                    <TouchableOpacity
-                        style={[styles.card, styles.secondaryCard]}
-                        onPress={() => { /* TODO: Create */ }}
-                    >
-                        <AppText variant="header" style={styles.cardIconSmall}>✨</AppText>
-                        <AppText variant="button">Crear</AppText>
-                    </TouchableOpacity>
-
-                    <TouchableOpacity
-                        style={[styles.card, styles.secondaryCard]}
-                        onPress={() => navigation.navigate('Settings')}
-                    >
-                        <AppText variant="header" style={styles.cardIconSmall}>⚙️</AppText>
-                        <AppText variant="button">Ajustes</AppText>
-                    </TouchableOpacity>
-                </View>
-            </View>
-        </Container>
+                {/* 
+                    Invisible touch area for "Settings".
+                    Placed to the right of the Play button.
+                */}
+                <TouchableOpacity
+                    style={styles.invisibleSettingsArea}
+                    onPress={() => navigation.navigate('Settings')}
+                    activeOpacity={0.5}
+                />
+            </Container>
+        </ImageBackground>
     );
 };
 
 const styles = StyleSheet.create({
-    container: {
-        paddingTop: 60,
-        paddingHorizontal: 20,
-    },
-    header: {
-        marginBottom: 40,
-        alignItems: 'center',
-    },
-    subtitle: {
-        opacity: 0.8,
-        marginTop: 8,
-    },
-    menu: {
+    background: {
         flex: 1,
-        gap: 20,
+        width: '100%',
+        height: '100%',
     },
-    card: {
-        borderRadius: 24,
-        padding: 24,
-        justifyContent: 'center',
-        alignItems: 'center',
-        shadowColor: "#000",
-        shadowOffset: {
-            width: 0,
-            height: 4,
-        },
-        shadowOpacity: 0.30,
-        shadowRadius: 4.65,
-        elevation: 8,
-    },
-    playCard: {
-        flex: 2,
-        backgroundColor: '#6C63FF', // Primary
-        borderWidth: 1,
-        borderColor: 'rgba(255,255,255,0.1)',
-    },
-    row: {
-        flexDirection: 'row',
-        gap: 16,
-        height: 140,
-    },
-    secondaryCard: {
+    overlayContainer: {
         flex: 1,
-        backgroundColor: '#1E1E1E', // Surface
-        borderWidth: 1,
-        borderColor: '#333',
+        backgroundColor: 'transparent',
     },
-    cardIcon: {
-        fontSize: 60,
-        marginBottom: 10,
+    invisiblePlayArea: {
+        position: 'absolute',
+        bottom: '8%',
+        left: '5%',
+        width: '70%', // Play takes 70% of width
+        height: 100,
+        // backgroundColor: 'rgba(0,255,0,0.3)', // Debug
     },
-    cardIconSmall: {
-        fontSize: 32,
-        marginBottom: 8,
-    },
-    cardTitle: {
-        color: 'white',
-        textTransform: 'uppercase',
-        letterSpacing: 1,
-    },
-    cardDesc: {
-        color: 'rgba(255,255,255,0.7)',
-        marginTop: 4,
-        fontSize: 14,
+    invisibleSettingsArea: {
+        position: 'absolute',
+        bottom: '8%',
+        right: '5%',
+        width: '20%', // Settings takes remaining 20% (with gap)
+        height: 100,
+        // backgroundColor: 'rgba(0,0,255,0.3)', // Debug
     }
 });
