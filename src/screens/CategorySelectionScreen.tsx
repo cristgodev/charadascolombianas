@@ -3,6 +3,7 @@ import { View, StyleSheet, FlatList, TouchableOpacity, Alert, Image, Dimensions,
 import { Container, AppText } from '../components';
 import { getCategories, deleteCategory, Category } from '../data/categories';
 import { useFocusEffect } from '@react-navigation/native';
+import { useLanguage } from '../context/LanguageContext';
 
 const { width } = Dimensions.get('window');
 const SPACING = 20; // Padding horizontal del container
@@ -12,6 +13,7 @@ const NUM_COLUMNS = 2;
 const CARD_SIZE = (width - (SPACING * 2) - GAP) / NUM_COLUMNS;
 
 export const CategorySelectionScreen = ({ navigation }: any) => {
+    const { t } = useLanguage();
     const [categories, setCategories] = React.useState<Category[]>([]);
 
     const loadCategories = async () => {
@@ -27,12 +29,12 @@ export const CategorySelectionScreen = ({ navigation }: any) => {
 
     const handleDelete = (category: Category) => {
         Alert.alert(
-            "Eliminar Categoría",
-            `¿Estás seguro de que quieres borrar "${category.title}"?`,
+            t('delete_category'),
+            t('delete_confirm', category.title),
             [
-                { text: "Cancelar", style: "cancel" },
+                { text: t('cancel'), style: "cancel" },
                 {
-                    text: "Eliminar",
+                    text: t('delete'),
                     style: "destructive",
                     onPress: async () => {
                         await deleteCategory(category.id);
@@ -81,8 +83,8 @@ export const CategorySelectionScreen = ({ navigation }: any) => {
         >
             <AppText style={styles.icon}>✨</AppText>
             <View style={styles.textContainer}>
-                <AppText variant="subheader" style={styles.title}>Crear Nueva Charada</AppText>
-                <AppText variant="caption" style={styles.desc}>Haz tu propio juego personalizado</AppText>
+                <AppText variant="subheader" style={styles.title}>{t('create_new')}</AppText>
+                <AppText variant="caption" style={styles.desc}>{t('create_desc')}</AppText>
             </View>
             <View style={styles.arrow}>
                 <AppText variant="header" style={{ color: '#555' }}>+</AppText>
@@ -98,7 +100,7 @@ export const CategorySelectionScreen = ({ navigation }: any) => {
         >
             <Container style={styles.container} noPadding>
                 <View style={[styles.headerRow, { paddingHorizontal: 20, paddingTop: 20 }]}>
-                    <AppText variant="header">Elige tu Tema</AppText>
+                    <AppText variant="header">{t('choose_theme')}</AppText>
                 </View>
 
                 <FlatList

@@ -1,25 +1,41 @@
 import React, { useState } from 'react';
-import { View, StyleSheet, TextInput, Alert, ScrollView } from 'react-native';
+import { View, StyleSheet, TextInput, Alert, ScrollView, TouchableOpacity, Image } from 'react-native';
 import { Container, AppText, Button } from '../components';
+import { useLanguage } from '../context/LanguageContext';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Category } from '../data/categories';
+import * as ImagePicker from 'expo-image-picker';
 
 export const CreateCategoryScreen = ({ navigation }: any) => {
+    const { t } = useLanguage();
     const [title, setTitle] = useState('');
     const [description, setDescription] = useState('');
-    const [icon, setIcon] = useState('🎲'); // Default emoji
+    const [imageUri, setImageUri] = useState<string | null>(null);
     const [wordsText, setWordsText] = useState('');
     const [loading, setLoading] = useState(false);
 
+    const pickImage = async () => {
+        const result = await ImagePicker.launchImageLibraryAsync({
+            mediaTypes: ['images'], // Updated to use string array or MediaTypeOptions if strictly typed
+            allowsEditing: true,
+            aspect: [1, 1],
+            quality: 0.5,
+        });
+
+        if (!result.canceled) {
+            setImageUri(result.assets[0].uri);
+        }
+    };
+
     const handleSave = async () => {
         if (!title.trim() || !description.trim() || !wordsText.trim()) {
-            Alert.alert("Faltan datos", "Por favor completa todos los campos.");
+            Alert.alert(t('missing_data'), t('missing_data_desc'));
             return;
         }
 
         const words = wordsText.split('\n').map(w => w.trim()).filter(w => w.length > 0);
         if (words.length < 5) {
-            Alert.alert("Muy pocas palabras", "Agrega al menos 5 palabras para que el juego sea divertido.");
+            Alert.alert(t('few_words'), t('few_words_desc'));
             return;
         }
 
@@ -29,7 +45,8 @@ export const CreateCategoryScreen = ({ navigation }: any) => {
                 id: `custom_${Date.now()}`,
                 title: title.trim(),
                 description: description.trim(),
-                icon,
+                icon: '✨', // Default icon since we only use image now
+                image: imageUri, // Save the image URI
                 color: '#FF4081', // Pink for custom
                 difficulty: 'Medio',
                 words,
@@ -44,11 +61,11 @@ export const CreateCategoryScreen = ({ navigation }: any) => {
             const updated = [...existing, newCategory];
             await AsyncStorage.setItem('custom_categories', JSON.stringify(updated));
 
-            Alert.alert("¡Éxito!", "Categoría creada correctamente.");
+            Alert.alert(t('success'), t('success_desc'));
             navigation.goBack();
         } catch (e) {
             console.error(e);
-            Alert.alert("Error", "No se pudo guardar la categoría.");
+            Alert.alert(t('error'), t('error_desc'));
         } finally {
             setLoading(false);
         }
@@ -57,7 +74,7 @@ export const CreateCategoryScreen = ({ navigation }: any) => {
     return (
         <Container style={styles.container}>
             <ScrollView showsVerticalScrollIndicator={false}>
-                <AppText variant="header" style={styles.header}>Crear Categoría</AppText>
+                <AppText variant="header" style={styles.header}>{t('create_header')}</AppText>
 
                 <View style={styles.formGroup}>
                     <AppText style={styles.label}>Título</AppText>
@@ -72,15 +89,17 @@ export const CreateCategoryScreen = ({ navigation }: any) => {
                 </View>
 
                 <View style={styles.formGroup}>
-                    <AppText style={styles.label}>Emoji (Icono)</AppText>
-                    <TextInput
-                        style={styles.input}
-                        placeholder="Ej: 🍕"
-                        placeholderTextColor="#666"
-                        value={icon}
-                        onChangeText={setIcon}
-                        maxLength={2}
-                    />
+                    <AppText style={styles.label}>Portada</AppText>
+                    <TouchableOpacity onPress={pickImage} style={styles.imagePicker} activeOpacity={0.8}>
+                        {imageUri ? (
+                            <Image source={{ uri: imageUri }} style={styles.imagePreview} />
+                        ) : (
+                            <View style={styles.placeholder}>
+                                <AppText style={{ fontSize: 40 }}>📷</AppText>
+                                <AppText style={styles.placeholderText}>Toca para elegir imagen</AppText>
+                            </View>
+                        )}
+                    </TouchableOpacity>
                 </View>
 
                 <View style={styles.formGroup}>
@@ -148,6 +167,29 @@ const styles = StyleSheet.create({
         fontSize: 16,
         borderWidth: 1,
         borderColor: 'rgba(255,255,255,0.2)',
+    },
+    imagePicker: {
+        height: 150,
+        backgroundColor: 'rgba(255,255,255,0.05)',
+        borderRadius: 10,
+        borderWidth: 1,
+        borderColor: 'rgba(255,255,255,0.3)',
+        borderStyle: 'dashed',
+        justifyContent: 'center',
+        alignItems: 'center',
+        overflow: 'hidden',
+    },
+    imagePreview: {
+        width: '100%',
+        height: '100%',
+        resizeMode: 'cover',
+    },
+    placeholder: {
+        alignItems: 'center',
+    },
+    placeholderText: {
+        color: '#aaa',
+        marginTop: 5,
     },
     textArea: {
         minHeight: 150,

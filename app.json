@@ -44,7 +44,8 @@
           "savePhotosPermission": "Necesitamos acceso para guardar los videos de las partidas."
         }
       ],
-      "expo-screen-orientation"
+      "expo-screen-orientation",
+      "expo-localization"
     ],
     "web": {
       "favicon": "./assets/favicon.png"

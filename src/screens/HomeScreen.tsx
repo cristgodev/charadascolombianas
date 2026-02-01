@@ -48,7 +48,7 @@ const styles = StyleSheet.create({
     },
     invisiblePlayArea: {
         position: 'absolute',
-        bottom: '8%',
+        bottom: '3%',
         left: '5%',
         width: '70%', // Play takes 70% of width
         height: 100,
@@ -56,7 +56,7 @@ const styles = StyleSheet.create({
     },
     invisibleSettingsArea: {
         position: 'absolute',
-        bottom: '8%',
+        bottom: '3%',
         right: '5%',
         width: '20%', // Settings takes remaining 20% (with gap)
         height: 100,

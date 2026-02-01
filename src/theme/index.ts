@@ -1,13 +1,13 @@
 export const palette = {
     // Brand Colors (Premium Colombian)
-    primary: '#6C63FF', // Vibrant Purple (Main Action)
-    secondary: '#00D4FF', // Cyan (Secondary Action)
-    accent: '#FFD700', // Gold (Highlights / Colombian Yellow)
+    primary: '#FCD116', // Colombian Yellow (Main Action)
+    secondary: '#003893', // Colombian Blue (Secondary Action)
+    accent: '#CE1126', // Colombian Red (Highlights/Accents)
 
     // Game State Colors
     success: '#00E676', // Intense Green (Correct)
     successBg: '#003310', // Dark Green Bg
-    error: '#FF1744', // Intense Red (Pass)
+    error: '#CE1126', // Colombian Red (Pass/Error)
     errorBg: '#330005', // Dark Red Bg
 
     // Backgrounds (Dark Mode Focus)
@@ -21,7 +21,7 @@ export const palette = {
     textMuted: '#6E6E6E',
 
     // UI Elements
-    border: '#333333',
+    border: '#FCD116', // Default border is now Yellow
 };
 
 export const spacing = {

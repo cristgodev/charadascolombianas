@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, StyleSheet } from 'react-native';
+import { View, StyleSheet, ImageBackground } from 'react-native';
 import { Container, AppText, Button } from '../components';
 
 export const ResultsScreen = ({ navigation, route }: any) => {
@@ -7,42 +7,53 @@ export const ResultsScreen = ({ navigation, route }: any) => {
     const { score, total, videoUri, category } = route.params || { score: 0, total: 0 };
 
     return (
-        <Container centered style={styles.container}>
-            <AppText variant="display" style={styles.header}>¡Se Acabó!</AppText>
+        <ImageBackground
+            source={require('../../assets/background_colombia.png')}
+            style={styles.background}
+            resizeMode="cover"
+        >
+            <Container centered style={[styles.container, { backgroundColor: 'transparent' }]}>
+                <AppText variant="display" style={styles.header}>¡Se Acabó!</AppText>
 
-            <View style={styles.scoreContainer}>
-                <AppText style={styles.scoreLabel}>Puntaje</AppText>
-                <AppText style={styles.scoreValue} adjustsFontSizeToFit numberOfLines={1}>
-                    {score}/{total}
-                </AppText>
-            </View>
+                <View style={styles.scoreContainer}>
+                    <AppText style={styles.scoreLabel}>Puntaje</AppText>
+                    <AppText style={styles.scoreValue} adjustsFontSizeToFit numberOfLines={1}>
+                        {score}/{total}
+                    </AppText>
+                </View>
 
-            {videoUri && (
+                {videoUri && (
+                    <Button
+                        title="🎬 Ver Video del Juego"
+                        onPress={() => navigation.navigate('VideoReview', { videoUri, category, score, total })}
+                        variant="secondary"
+                        style={{ width: '80%', marginBottom: 16 }}
+                    />
+                )}
+
                 <Button
-                    title="🎬 Ver Video del Juego"
-                    onPress={() => navigation.navigate('VideoReview', { videoUri, category, score, total })}
-                    variant="secondary"
-                    style={{ width: '80%', marginBottom: 16 }}
+                    title="🔄 Jugar Otra Vez"
+                    onPress={() => navigation.navigate('CategorySelection')}
+                    style={{ width: '80%', marginTop: 24, marginBottom: 16 }}
                 />
-            )}
 
-            <Button
-                title="🔄 Jugar Otra Vez"
-                onPress={() => navigation.navigate('CategorySelection')}
-                style={{ width: '80%', marginTop: 24, marginBottom: 16 }}
-            />
-
-            <Button
-                title="🏠 Inicio"
-                variant="outline"
-                onPress={() => navigation.navigate('Home')}
-                style={{ width: '80%' }}
-            />
-        </Container>
+                <Button
+                    title="🏠 Inicio"
+                    variant="outline"
+                    onPress={() => navigation.navigate('Home')}
+                    style={{ width: '80%' }}
+                />
+            </Container>
+        </ImageBackground>
     );
 };
 
 const styles = StyleSheet.create({
+    background: {
+        flex: 1,
+        width: '100%',
+        height: '100%',
+    },
     container: {
         paddingVertical: 40,
     },

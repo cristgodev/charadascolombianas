@@ -1,3 +1,19 @@
+/**
+ * WORD COUNTS (Generated Debug Info)
+ * ----------------------------------
+ * De la Tierrita: 106
+ * Parranda Santa: 95
+ * Farándula Criolla: 79
+ * Pasión Tricolor: 80
+ * Pueblos y Ciudades: 95
+ * Dichos y Refranes: 100
+ * Paisas Pues: 140
+ * Costeños: 118
+ * Rolos (Cachacos): 110
+ * Santandereanos: 105
+ * Llaneros: 110
+ * Vallunos: 155
+ */
 export interface Category {
     id: string;
     title: string;
@@ -15,7 +31,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 export const DEFAULT_CATEGORIES: Category[] = [
     {
         id: 'col_general',
-        title: '🇨🇴 De la Tierrita',
+        title: 'De la Tierrita',
         description: 'Cosas que todo colombiano conoce.',
         icon: '🇨🇴',
         color: '#FFD700', // Amarillo
@@ -48,7 +64,7 @@ export const DEFAULT_CATEGORIES: Category[] = [
     },
     {
         id: 'col_music',
-        title: '🎵 Parranda Santa',
+        title: 'Parranda Santa',
         description: 'Desde Vallenato hasta lo urbano.',
         icon: '🎵',
         color: '#00D4FF', // Cyan
@@ -79,7 +95,7 @@ export const DEFAULT_CATEGORIES: Category[] = [
     },
     {
         id: 'col_tv',
-        title: '📺 Farándula Criolla',
+        title: 'Farándula Criolla',
         description: 'Novelas, reinas y personajes.',
         icon: '📺',
         color: '#FF1744', // Red
@@ -108,7 +124,7 @@ export const DEFAULT_CATEGORIES: Category[] = [
     },
     {
         id: 'col_sports',
-        title: '⚽ Pasión Tricolor',
+        title: 'Pasión Tricolor',
         description: 'Nuestra gloria deportiva.',
         icon: '⚽',
         color: '#FFEA00', // Yellow
@@ -135,7 +151,7 @@ export const DEFAULT_CATEGORIES: Category[] = [
     },
     {
         id: 'col_geo',
-        title: '🗺️ Pueblos y Ciudades',
+        title: 'Pueblos y Ciudades',
         description: 'De norte a sur, de oriente a occidente.',
         icon: '🗺️',
         color: '#00E676', // Green
@@ -166,7 +182,7 @@ export const DEFAULT_CATEGORIES: Category[] = [
     },
     {
         id: 'col_sayings',
-        title: '🗣️ Dichos y Refranes',
+        title: 'Dichos y Refranes',
         description: 'Para que hable como es.',
         icon: '🗣️',
         color: '#AA00FF', // Purple
@@ -194,6 +210,242 @@ export const DEFAULT_CATEGORIES: Category[] = [
             'Hijo de tigre sale pintado', 'La ropa sucia se lava en casa', 'Lo barato sale caro', 'Mal de muchos consuelo de tontos', 'Más vale tarde que nunca',
             'No hay mal que por bien no venga', 'Ojo por ojo', 'Papelito habla', 'Quien tiene boca se equivoca', 'Sarna con gusto no pica',
             'Tanto va el cántaro al agua', 'Una golondrina no hace verano', 'Zapatero a tus zapatos', 'Tener la sartén por el mango', 'Estar en la olla'
+        ]
+    },
+    {
+        id: 'col_paisa',
+        title: 'Paisas Pues',
+        description: '¡Eh ave maría pues!',
+        icon: '🤠',
+        color: '#2E7D32', // Forest Green
+        difficulty: 'Medio' as const,
+        image: require('../../assets/Paisas.png'),
+        words: [
+            // Lugares y Cultura
+            'Bandeja Paisa', 'Feria de las Flores', 'Silleteros', 'Metro de Medellín', 'Pueblito Paisa',
+            'Guatapé', 'Piedra del Peñol', 'Jericó', 'Santa Fe de Antioquia', 'Parque Lleras',
+            'Plaza de Botero', 'Comuna 13', 'El Poblado', 'Jardín', 'Támesis',
+            'Suroeste Antioqueño', 'Oriente Antioqueño', 'Río Medellín', 'Cerro Nutibara', 'Cerro de las Tres Cruces',
+            'Edificio Coltejer', 'Parque Berrío', 'Parque Explora', 'Jardín Botánico', 'Museo de Antioquia',
+            'Sabaneta', 'Envigado', 'Itagüí', 'Bello', 'La Estrella',
+            'Caldas', 'Copacabana', 'Girardota', 'Barbosa', 'San Pedro de los Milagros',
+            'Santa Elena', 'Palmas', 'San Antonio de Pereira', 'Carmen de Viboral', 'La Ceja',
+            'Rionegro', 'Marinilla', 'El Retiro', 'Sonsón', 'Andes',
+            'Ciudad del Río', 'Puente de Occidente', 'Hidroituango', 'EPM', 'Medellín',
+            // Comida
+            'Arepa Paisa', 'Arepa de Chócolo', 'Mazamorra', 'Claro', 'Mondongo',
+            'Fríjoles', 'Chicharrón', 'Chorizo', 'Morcilla', 'Hogao',
+            'Calentado', 'Parva', 'Buñuelo', 'Pandequeso', 'Quesito',
+            'Brevas con Arequipe', 'Solteritas', 'Oblea', 'Salpicón', 'Empanada Envigadeña',
+            'Sancocho Antioqueño', 'Sudado de Pollo', 'Carne Molida', 'Tajadas de Maduro', 'Agua de Panela con Queso',
+            // Modismos y Personajes
+            '¡Eh ave maría!', 'Pues', 'Oigan a mi tío', 'Charro', 'Chimba',
+            'Parce', 'Mañé', 'Taco (Trancón)', 'Cojer la comba al palo', 'Dar visaje',
+            'Comer callado', 'Desparchado', 'Embalado', 'Farra', 'Guaro',
+            'Loliar', 'Mister', 'Achantado', 'Amañado', 'Arracachas',
+            'Berraco', 'Boquisabroso', 'Casado', 'Chichipato', 'Chicanear',
+            'La Eterna Primavera', 'Atlético Nacional', 'Independiente Medellín', 'Juanes', 'J Balvin',
+            'Maluma', 'Karol G', 'Fernando Botero', 'Rigoberto Urán', 'Cochise Rodríguez',
+            'Rene Higuita', 'Faber Burgos', 'Suso el Paspi', 'Cosiaca', 'Pedro Rimales',
+            'Moniar', 'Poliar', 'Voliar', 'Chichar', 'Culebrero',
+            'Arriero', 'Mula', 'Carriel', 'Poncho', 'Sombrero Aguadeño',
+            'Machete', 'Alpargatas', 'Ruana', 'Tiple', 'Trova Paisa',
+            'Fonda', 'Finca', 'Mayordomo', 'Tapetusa', 'Aguardiente Antioqueño',
+            'Ron Medellín', 'Pilsen', 'Arepa de Mote', 'Cerezas', 'Casquitos de Guayaba'
+        ]
+    },
+    {
+        id: 'col_costeno',
+        title: 'Costeños',
+        description: 'Ajá, ¿y qué? Sabor y alegría.',
+        icon: '🏖️',
+        color: '#0288D1', // Light Blue
+        difficulty: 'Fácil' as const,
+        image: require('../../assets/Costenos.png'),
+        words: [
+            // Dichos y Expresiones
+            'Ajá', 'No joda', 'Cule vaina', 'Bollo limpio', 'Suero costeño',
+            'Mote de queso', 'Arroz de coco', 'Arepa de huevo', 'Patacón', 'Carimañola',
+            'Eche', 'Erda', 'Cipote', 'Barro', 'Lenteja',
+            'Espeluque', 'Full', 'Corroncho', 'Espantajopo',
+            'Filo', 'Foco', 'Mamar gallo', 'Pechichón', 'Recocha',
+            'Sereno', 'Viche', 'Zapote', 'Chévere', 'Bacano',
+            'Pelao', 'Cuadro', 'Llave', 'Compadre', 'Mijito',
+            'Tres quince', 'Cule pava', 'Te la vacilas', 'Pura laya',
+            // Comida
+            'Cayeye', 'Cabeza de Gato', 'Sancocho de Pescado', 'Viuda de Pescado', 'Arroz de Lisa',
+            'Butifarra', 'Kibbeh', 'Pan de Bono Costeño', 'Jugo de Corozo', 'Agua de Coco',
+            'RASPAO', 'Bollo de Mazorca', 'Bollo de Yuca', 'Queso Costeño', 'Bocachico',
+            'Mojarra Frita', 'Coctel de Camarón', 'Cazuela de Mariscos', 'Langosta', 'Muelas de Cangrejo',
+            'Enyucado', 'Cocada', 'Alegría', 'Caballito', 'Dulce de Ñame',
+            // Cultura y Lugares
+            'Sombrero Vueltiao', 'Marimonda', 'Carnaval de Barranquilla', 'La Ventana al Mundo', 'Castillo de San Felipe',
+            'Murallas de Cartagena', 'Parque Tayrona', 'Sierra Nevada', 'Ciudad Perdida', 'Cabo de la Vela',
+            'Punta Gallinas', 'Manaure', 'Palomino', 'Minca', 'Taganga',
+            'Rodadero', 'Bocagrande', 'La Boquilla', 'Playa Blanca', 'Isla Barú',
+            'Islas del Rosario', 'Mompox', 'Ciénaga', 'Aracataca', 'Valledupar',
+            'Riohacha', 'Sincelejo', 'Montería', 'San Andrés', 'Providencia',
+            'Vallenato', 'Cumbia', 'Porro', 'Mapalé', 'Champeta',
+            'Fandango', 'Bullerengue', 'Chandé', 'Gaita', 'Tambora',
+            // Personajes
+            'El Pibe Valderrama', 'Shakira', 'Sofía Vergara', 'Diomedes Díaz', 'Joe Arroyo',
+            'Carlos Vives', 'Radamel Falcao', 'Edgar Rentería', 'Teófilo Gutiérrez', 'Pambelé',
+            'Gabriel García Márquez', 'Totó la Momposina', 'Petrona Martínez', 'Estercita Forero', 'Checo Acosta'
+        ]
+    },
+    {
+        id: 'col_rolo',
+        title: 'Rolos (Cachacos)',
+        description: 'Ala, qué frío tan machu.',
+        icon: '🧣',
+        color: '#455A64', // Blue Grey
+        difficulty: 'Medio' as const,
+        image: require('../../assets/Rolos.png'),
+        words: [
+            // Comida
+            'Ajiaco', 'Changua', 'Tamal con chocolate', 'Almojábana', 'Pandebono',
+            'Chocolate santafereño', 'Agua de panela con queso', 'Oblea', 'Milhoja', 'Roscon resobado',
+            'Pan de yuca', 'Gullas', 'Garullas', 'Masato', 'Chicha',
+            'Fritanga', 'Piquete', 'Gallina criolla', 'Sopa de pan', 'Cuchuco de trigo',
+            'Mazorca', 'Envuelto de mazorca', 'Cuajada con melao', 'Brevas con arequipe', 'Postre de natas',
+            'Merengón', 'Fresas con crema', 'Salpicón', 'Aromática', 'Canelazo',
+            // Lugares
+            'Monserrate', 'Plaza de Bolívar', 'La Candelaria', 'Chorro de Quevedo', 'Usaquén',
+            'Parque Simón Bolívar', 'Jardín Botánico', 'Maloka', 'Mundo Aventura', 'Salitre Mágico',
+            'El Campín', 'Movistar Arena', 'Teatro Colón', 'Museo del Oro', 'Museo Nacional',
+            'Torre Colpatria', 'Planetario', 'Biblioteca Virgilio Barco', 'Zona T', 'Parque de la 93',
+            'Transmilenio', 'Séptima', 'Ciclovía', 'Paloquemao', 'Corabastos',
+            'Guatavita', 'Suesca', 'Zipaquirá', 'Catedral de Sal', 'La Calera',
+            'Sopó', 'Chía', 'Cajicá', 'Tabio', 'Tenjo',
+            // Expresiones y Cultura
+            'Ala', 'Chusco', 'Paila', 'Ñero', 'Gomelo',
+            'Soplar', 'Jurgo', 'Tinto', 'Perico', 'Onces',
+            'Rumbiar', 'Guaro', 'Pola', 'Sietecueros', 'Llovizna',
+            'Trancón', 'Buseta', 'Colectivo', 'Taxi', 'Uber',
+            'Carachas', 'Sumercé', 'Regáleme', 'Vecino', 'Mondongo',
+            'Chino', 'Mija', 'Juepuerca', 'Virgen Santísima', 'Dios mío',
+            'Qué pecado', 'Tan bonito', 'Hacer vaca', 'Caer gordo', 'Parar bolas',
+            'Sacar la piedra', 'Tener huevo', 'Hacer oso', 'Darse garra', 'Estar moscas',
+            'Millonarios', 'Santa Fe', 'La Equidad', 'Fortaleza', 'Bogotá FC'
+        ]
+    },
+    {
+        id: 'col_santander',
+        title: 'Santandereanos',
+        description: '¡Mano! Carácter y hormigas.',
+        icon: '😡',
+        color: '#D84315', // Deep Orange
+        difficulty: 'Difícil' as const,
+        image: require('../../assets/Santander.png'),
+        words: [
+            // Comida
+            'Hormiga Culona', 'Mute', 'Cabrito', 'Pepitoria', 'Arepa Santandereana',
+            'Carne Oreada', 'Bocadillo Veleño', 'Tamal Santandereano', 'Chicha', 'Masato',
+            'Chorizo del Valle de San José', 'Sabajón', 'Génovas', 'Piña de Lebrija', 'Cacao',
+            'Chocolate Cruz', 'Kola Hipinto', 'Trago de caña', 'Guarapo', 'Sopa de Mondongo',
+            'Sopa de arepa', 'Arroz de pepitoria', 'Yuca frita', 'Ají', 'Dulce de apio',
+            // Lugares
+            'Cañón del Chicamocha', 'Panachi', 'Barichara', 'San Gil', 'Bucaramanga',
+            'Girón', 'Zapatoca', 'El Socorro', 'Puente del Común', 'Salto del Duende',
+            'Lengerke', 'Mesa de los Santos', 'Piedecuesta', 'Floridablanca', 'Barrancabermeja',
+            'Río Suárez', 'Río Fonce', 'Cueva del Indio', 'Cascada de Juan Curi', 'Parque Gallineral',
+            'Hoyopiri', 'Santuario', 'Páramo de Santurbán', 'Berlín', 'Vetas',
+            // Expresiones
+            'Mano', 'Pingo', 'Toche', 'Arrecho', 'Guarapo',
+            'Joda', 'Nonos', 'Chino', 'Motilones', 'Berraco',
+            'Mire puest', 'Usted', 'Fuete', 'Chocatos', 'Zute',
+            'Juepuerca', 'Virgen Santísima', 'Ole', '¡Diga!', 'Tantico',
+            '¡Calle la jeta!', 'Topar', 'Atanquiza', 'Vusté', 'Coshcos',
+            'Fúquese', 'Gurre', 'Guache', 'Soche', 'Jarto',
+            'Lambón', 'Pingarria', 'Retahíla', 'Surrón', 'Tiesto',
+            // Cultura y Personajes
+            'Atlético Bucaramanga', 'Alianza Petrolera', 'Cúcuta Deportivo (Vecino)', 'Comuneros', 'Galán',
+            'Manuela Beltrán', 'Antonia Santos', 'Virgilio Barco', 'Luis Carlos Galán', 'Rodolfo Hernández',
+            'Jorge Celedón (Villanueva)', 'Bambuco', 'Torbellino', 'Guabina', 'Tiple',
+            'Requinto', 'Alpargatas', 'Sombrero Vueltiao (Uso común)', 'Ruana (En páramo)', 'Tabaco'
+        ]
+    },
+    {
+        id: 'col_llanero',
+        title: 'Llaneros',
+        description: 'Joropo, carne y sabana.',
+        icon: '🐎',
+        color: '#FF8F00', // Amber
+        difficulty: 'Difícil' as const,
+        image: require('../../assets/Llaneros.png'),
+        words: [
+            // Cultura y Música
+            'Joropo', 'Arpa', 'Cuatro', 'Maracas', 'Capachos',
+            'Bandola', 'Coleo', 'Manga de coleo', 'Trabajo de llano', 'Cantos de vaquería',
+            'Contrapunteo', 'Pasaje', 'Golpe', 'Zumba que zumba', 'Seis numerao',
+            'Gabán', 'Pajarillo', 'Quirpa', 'Chipola', 'San Rafael',
+            'Festival de la Canción Llanera', 'Torneo Internacional del Joropo', 'Cuadrillas de San Martín', 'Festival del Retorno', 'Día de la Llaneridad',
+            // Comida
+            'Mamona', 'Ternera a la llanera', 'Carne a la perra', 'Chigüiro', 'Cachama',
+            'Amarillo a la Monseñor', 'Sancocho de gallina', 'Picillo', 'Tungos', 'Majule',
+            'Vinete', 'Cacho', 'Queso siete cueros', 'Pan de arroz', 'Rosquitas de sagú',
+            'Gofios', 'Dulce de marañón', 'Melcocha', 'Guarulo', 'Masato de arroz',
+            'Topocho', 'Plátano maduro', 'Yuca brava', 'Mañoco', 'Casabe',
+            // Naturaleza y Lugares
+            'Caño Cristales', 'Villavicencio', 'Yopal', 'Arauca', 'Puerto Carreño',
+            'San Martín', 'Granada', 'Acacías', 'Restrepo', 'Cumaral',
+            'Río Meta', 'Río Guaviare', 'Río Orinoco', 'Río Manacacías', 'Obelisco',
+            'Los Ocarros', 'Malocas', 'Las Pavas', 'Tame', 'Saravena',
+            'Sabana', 'Morichal', 'Esteros', 'Matas de monte', 'Serranía de la Macarena',
+            'Chigüiro', 'Venado', 'Ocarro', 'Oso palmero', 'Corocora',
+            // Expresiones y Utensilios
+            'Guate', 'Pariente', 'Camarita', 'Botalón', 'Fundo',
+            'Hato', 'Garero', 'Pijotero', 'Veguero', 'Cimarron',
+            'Cabrestero', 'Baquiano', 'Soguero', 'Mensú', 'Caballeriza',
+            'Hamaca', 'Campechana', 'Chinchorro', 'Mosquitero', 'Totuma',
+            'Cotizas', 'Liquiliqui', 'Sombrero llanero', 'Rejo', 'Soga',
+            'Chafalote', 'Cuchillo', 'Polainas', 'Espuelas', 'Montura'
+        ]
+    },
+    {
+        id: 'col_valluno',
+        title: 'Vallunos',
+        description: '¡Mirá ve! Salsa y sabor.',
+        icon: '💃',
+        color: '#8E24AA', // Purple
+        difficulty: 'Medio' as const,
+        image: require('../../assets/Vallunos.png'),
+        words: [
+            // Comida
+            'Cholado', 'Champús', 'Lulada', 'Pandebono', 'Manjar Blanco',
+            'Aborrajado', 'Marranitas', 'Chontaduro', 'Sancocho de Gallina', 'Chuleta Valluna',
+            'Empanada Valluna', 'Ají de Maní', 'Bofe', 'Chilapos', 'Jugo de Borojó',
+            'Dulce de Cortado', 'Desamargado', 'Maceta', 'Alfeñique', 'Pan de Yuca',
+            'Rosquillas', 'Tostadas de Plátano', 'Arroz Atollado', 'Fiambre', 'Tamal Valluno',
+            'Bizcocho de Cuajada', 'Caspi', 'Grosellas con Sal', 'Mango Biche', 'Gelatina de Pata',
+            'Arepa de Chócolo (también se ve)', 'Cuaresmero', 'Hojaldras', 'Trababuches', 'Champus valluno',
+            // Lugares
+            'Cali', 'Cristo Rey', 'Tres Cruces', 'Río Pance', 'Bulevar del Río',
+            'La Ermita', 'Gato de Tejada', 'Barrio San Antonio', 'Juanchito', 'Km 18',
+            'Lago Calima', 'Buga', 'Señor de los Milagros', 'Tuluá', 'Palmira',
+            'Cartago', 'Bordados de Cartago', 'Zoológico de Cali', 'Estadio Pascual Guerrero', 'Plaza de Cayzedo',
+            'Chipichape', 'Unicentro Cali', 'Jardín Botánico', 'Museo La Tertulia', 'Teatro Municipal',
+            'Parque del Perro', 'Granada', 'Menga', 'Dapa', 'San Cipriano',
+            'Buenaventura', 'Muelle Turístico', 'Ladrilleros', 'Juanchaco', 'Bahía Málaga',
+            'Jamundí', 'Yumbo', 'Candelaria', 'Florida', 'Pradera',
+            'El Cerrito', 'Hacienda El Paraíso', 'Ginebra', 'Guacarí', 'Roldanillo',
+            'Zarzal', 'Sevilla', 'Caicedonia', 'La Unión', 'Versalles',
+            // Salsa y Cultura
+            'Feria de Cali', 'Salsódromo', 'Grupo Niche', 'Guayacán Orquesta', 'Jairo Varela',
+            'Piper Pimienta', 'Joe Arroyo', 'Delirio', 'Mulato Cabaret', 'Carpa Delirio',
+            'Salsa Caleña', 'Pasos de Salsa', 'Cali Pachanguero', 'Oiga Mire Vea', 'Las Caleñas',
+            'América de Cali', 'Deportivo Cali', 'El Clásico', 'Diablos Rojos', 'Azucareros',
+            'La Mechita', 'El Glorioso', 'Palmaseca', 'Barón Rojo', 'Frente Radical',
+            'Petronio Álvarez', 'Currulao', 'Marimba', 'Chirimía', 'Pacífico',
+            // Jerga y Expresiones
+            'Mirá ve', 'Oís', 'Písquelo', 'Borondo', 'Dar un borondo',
+            'Chuspa', 'Calidoso', 'Aletoso', 'Bochinche', 'Churrusco',
+            'Chontaduro (el vendedor)', 'Birlocha', 'Guachafita', 'Recocha', 'Desparche',
+            'Foquiado', 'Chicanero', 'Voliar uña', 'Voliar pata', 'Zumbambico',
+            'Cusumbosolo', 'Pamplinas', '¡Ve!', '¡Mirá!', '¡Oíme!',
+            '¿La vistes?', '¿Lo vistes?', '¿Si o no?', 'Bien o qué', 'Todo bien',
+            'Camellador', 'Entucado', 'Tusa', 'Enguayabado', 'Galería',
+            'El MIO', 'Chiva', 'Motorratón', 'Guala', 'Jeepao'
         ]
     },
     {
@@ -228,6 +480,10 @@ export const ARCHIVED_WORDS_NSFW = {
         'No joda',
         'Malparido',
         'Carechimba'
+    ],
+    costeno_nsfw: [
+        'Mondá',
+        'Se formó el verguero'
     ]
 };
 
