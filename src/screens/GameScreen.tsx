@@ -6,6 +6,8 @@ import { useGameTimer, useAccelerometer } from '../hooks';
 import * as ScreenOrientation from 'expo-screen-orientation';
 import * as Haptics from 'expo-haptics';
 
+import { theme, spacing } from '../theme';
+
 const MOCK_WORDS = ['Error', 'No Data'];
 
 export const GameScreen = ({ navigation, route }: any) => {
@@ -18,6 +20,10 @@ export const GameScreen = ({ navigation, route }: any) => {
     // Shuffle words on init
     const [words, setWords] = useState<string[]>([]);
     const [gameStatus, setGameStatus] = useState<'READY' | 'PLAYING' | 'PAUSED' | 'FINISHED'>('READY');
+
+    // Word Tracking for Video Overlay
+    const [wordHistory, setWordHistory] = useState<{ word: string, timestamp: number, result: 'correct' | 'pass' | 'pending' }[]>([]);
+    const [gameStartTime, setGameStartTime] = useState<number>(0);
 
     // Tilt handling mechanism
     // We need to wait for Neutral before accepting a new tilt action.
@@ -57,8 +63,14 @@ export const GameScreen = ({ navigation, route }: any) => {
 
         // Use a timeout as failsafe in case recording callback never fires
         const failsafeTimeout = setTimeout(() => {
-            navigation.navigate('Results', { score: finalScore, total: finalTotal, videoUri: null, category: category });
-        }, 3000);
+            navigation.navigate('Results', {
+                score: finalScore,
+                total: finalTotal,
+                videoUri: null,
+                category: category,
+                wordHistory: wordHistory
+            });
+        }, 15000);
 
         // Stop recording if running
         if (cameraRef.current) {
@@ -69,7 +81,13 @@ export const GameScreen = ({ navigation, route }: any) => {
             });
         } else {
             clearTimeout(failsafeTimeout);
-            navigation.navigate('Results', { score: finalScore, total: finalTotal, videoUri: null, category: category });
+            navigation.navigate('Results', {
+                score: finalScore,
+                total: finalTotal,
+                videoUri: null,
+                category: category,
+                wordHistory: wordHistory
+            });
         }
     };
 
@@ -78,11 +96,18 @@ export const GameScreen = ({ navigation, route }: any) => {
         // Navigate when recording is done
         // Check if game is finished to avoid premature navigation not triggered by game end
         if (gameStatus === 'FINISHED' || wordsAnswered >= 10) {
-            navigation.navigate('Results', { score, total: wordsAnswered, videoUri: uri, category: category });
+            navigation.navigate('Results', {
+                score,
+                total: wordsAnswered,
+                videoUri: uri,
+                category: category,
+                wordHistory: wordHistory
+            });
         }
     };
 
-    const { timeLeft, startTimer, stopTimer, resetTimer } = useGameTimer(60, onTimeEnd);
+    const { timeLeft, startTimer, stopTimer, resetTimer } = useGameTimer(120, onTimeEnd);
+
     const { tilt, data } = useAccelerometer(gameStatus === 'PLAYING');
 
     useEffect(() => {
@@ -117,6 +142,19 @@ export const GameScreen = ({ navigation, route }: any) => {
         setWordsAnswered(nextAnsweredCount);
 
         const newScore = correct ? score + 1 : score;
+
+        // Update current word result in history
+        const currentTime = Date.now() - gameStartTime;
+        setWordHistory(prev => {
+            const newHistory = [...prev];
+            if (newHistory.length > 0) {
+                // Update the last word with result (the one we just finished)
+                // Note: The timestamp stored is when it started.
+                newHistory[newHistory.length - 1].result = correct ? 'correct' : 'pass';
+            }
+            return newHistory;
+        });
+
         if (correct) {
             setScore(newScore);
             Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
@@ -132,7 +170,17 @@ export const GameScreen = ({ navigation, route }: any) => {
 
         // Move to next word
         setReadyForAction(false); // require returning to neutral
-        setWordIndex(prev => (prev + 1) % words.length); // Loop for now
+        setReadyForAction(false); // require returning to neutral
+
+        let nextIndex = (wordIndex + 1) % words.length;
+        setWordIndex(nextIndex);
+
+        // Record Next Word Start Time
+        const nextTime = Date.now() - gameStartTime;
+        setWordHistory(prev => [
+            ...prev,
+            { word: words[nextIndex], timestamp: nextTime, result: 'pending' }
+        ]);
     };
 
     const startGame = () => {
@@ -141,6 +189,14 @@ export const GameScreen = ({ navigation, route }: any) => {
         setWordsAnswered(0);
         resetTimer();
         setGameStatus('PLAYING');
+
+        // Start Recording Logic
+        const now = Date.now();
+        setGameStartTime(now);
+        // Record first word (timestamp 0 relative to game start)
+        // Note: Camera starts async, so there might be a slight offset, but close enough.
+        setWordHistory([{ word: words[0], timestamp: 0, result: 'pending' }]);
+
         // Start Recording
         cameraRef.current?.startRecording();
     };
@@ -168,18 +224,19 @@ export const GameScreen = ({ navigation, route }: any) => {
             </TouchableOpacity>
 
             {gameStatus === 'FINISHED' && (
-                <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-                    <AppText variant="header">Guardando...</AppText>
-                    <AppText>Procesando video de recuerdo 🎥</AppText>
+                <View style={styles.centerContent}>
+                    <AppText variant="header" style={styles.statusText}>Guardando...</AppText>
+                    <AppText style={styles.statusSubtext}>Procesando video de recuerdo 🎥</AppText>
+                    <AppText style={styles.loadingText}>Puede tardar unos segundos...</AppText>
                 </View>
             )}
 
             {gameStatus === 'READY' && (
-                <>
-                    <AppText variant="header">¡Prepárate!</AppText>
-                    <AppText style={styles.instruction}>Ponte el cel en la frente</AppText>
-                    <Button title="¡Hágale!" onPress={startGame} style={{ marginTop: 20 }} />
-                </>
+                <View style={styles.centerContent}>
+                    <AppText variant="display" style={styles.readyTitle}>¡Prepárate!</AppText>
+                    <AppText style={styles.instruction}>Ponte el cel en la frente 📱</AppText>
+                    <Button title="¡Hágale!" onPress={startGame} style={styles.startButton} />
+                </View>
             )}
 
             {gameStatus === 'PLAYING' && (
@@ -188,7 +245,7 @@ export const GameScreen = ({ navigation, route }: any) => {
                     <AppText style={styles.counter}>{wordsAnswered}/10</AppText>
                     <View style={styles.wordContainer}>
                         <AppText
-                            variant="header"
+                            variant="display" // Use display for bigger impact
                             style={styles.word}
                             adjustsFontSizeToFit
                             numberOfLines={3}
@@ -200,8 +257,8 @@ export const GameScreen = ({ navigation, route }: any) => {
                         {readyForAction ? "Abajo: ¡Eso! / Arriba: Paso" : "Vuelve al centro"}
                     </AppText>
 
-                    {/* Debug Info */}
-                    <AppText style={styles.debug}>Tilt: {tilt} (Z: {data.z.toFixed(2)})</AppText>
+                    {/* Debug Info: Optional, can comment out for prod */}
+                    {/* <AppText style={styles.debug}>Tilt: {tilt} (Z: {data.z.toFixed(2)})</AppText> */}
                 </>
             )}
         </Container>
@@ -213,44 +270,55 @@ const styles = StyleSheet.create({
         // dynamic bg colors will be applied via style props
     },
     bgCorrect: {
-        backgroundColor: '#2ecc71', // Vivid Green
+        backgroundColor: theme.colors.success,
     },
     bgPass: {
-        backgroundColor: '#e74c3c', // Passion Red
+        backgroundColor: theme.colors.error,
     },
     timer: {
         fontSize: 40,
         fontWeight: 'bold',
         position: 'absolute',
-        top: 40, // Increased top margin
-        right: 60, // Avoid right notch
+        top: 50, // Hardcoded safe margin for landscape header
+        right: 80, // Moved significantly inward
+        zIndex: 20,
+        color: theme.colors.text,
+        textShadowColor: 'rgba(0,0,0,0.7)',
+        textShadowOffset: { width: 1, height: 1 },
+        textShadowRadius: 3,
     },
     counter: {
         fontSize: 24,
         position: 'absolute',
-        bottom: 40, // Moved to bottom to avoid clutter at top
+        bottom: 50, // Safe bottom margin
         left: 60,
         fontWeight: 'bold',
-        color: '#eee' // Lighter color for visibility on dark background
+        color: 'rgba(255,255,255,0.7)'
     },
     wordContainer: {
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
-        paddingHorizontal: 40, // Prevent touching edges
+        paddingHorizontal: spacing.xxl,
+        width: '80%', // Limit width to prevent reading edge-to-edge
     },
     word: {
-        fontSize: 60, // Smaller base size to prevent instant overflow
-        lineHeight: 80, // Fixes clipping! Must be > fontSize
+        fontSize: 56, // Large but legible
+        lineHeight: 64,
         textAlign: 'center',
-        fontWeight: 'bold',
+        fontWeight: '900',
         textShadowColor: 'rgba(0,0,0,0.5)',
-        textShadowOffset: { width: 1, height: 1 },
+        textShadowOffset: { width: 2, height: 2 },
         textShadowRadius: 4,
     },
     instruction: {
-        marginBottom: 20,
-        opacity: 0.7,
+        marginBottom: spacing.m,
+        opacity: 0.8,
+        fontSize: 18,
+        fontWeight: '600',
+        textShadowColor: 'rgba(0,0,0,0.5)',
+        textShadowOffset: { width: 1, height: 1 },
+        textShadowRadius: 2,
     },
     debug: {
         position: 'absolute',
@@ -260,15 +328,49 @@ const styles = StyleSheet.create({
     },
     exitButton: {
         position: 'absolute',
-        top: 40, // Increased top margin
-        left: 60, // Avoid left notch
+        top: 50, // Match timer top margin
+        left: 60,
         zIndex: 10,
-        padding: 10,
-        backgroundColor: 'rgba(0,0,0,0.1)',
-        borderRadius: 8,
+        paddingVertical: spacing.s,
+        paddingHorizontal: spacing.m,
+        backgroundColor: 'rgba(0,0,0,0.3)',
+        borderRadius: theme.borderRadius.m,
+        borderWidth: 1,
+        borderColor: 'rgba(255,255,255,0.2)'
     },
     exitButtonText: {
         fontSize: 14,
-        fontWeight: 'bold'
+        fontWeight: 'bold',
+        color: 'white',
+        textTransform: 'uppercase',
+    },
+    centerContent: {
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: spacing.m,
+    },
+    statusText: {
+        fontSize: 32,
+        color: theme.colors.accent,
+    },
+    statusSubtext: {
+        fontSize: 18,
+        color: theme.colors.text,
+    },
+    loadingText: {
+        marginTop: spacing.s,
+        fontSize: 14,
+        opacity: 0.7,
+        color: theme.colors.textSecondary,
+    },
+    readyTitle: {
+        fontSize: 48,
+        color: theme.colors.accent,
+        marginBottom: spacing.m,
+    },
+    startButton: {
+        marginTop: spacing.l,
+        minWidth: 200,
     }
 });
+

@@ -1,10 +1,23 @@
 import React from 'react';
 import { View, StyleSheet } from 'react-native';
+import { useFocusEffect } from '@react-navigation/native';
+import * as ScreenOrientation from 'expo-screen-orientation';
 import { Container, AppText, Button } from '../components';
+import { theme, spacing } from '../theme';
+
+
 
 export const ResultsScreen = ({ navigation, route }: any) => {
     // Safely access params
-    const { score, total, videoUri, category } = route.params || { score: 0, total: 0 };
+    const { score, total, videoUri, category, wordHistory } = route.params || { score: 0, total: 0 };
+
+    useFocusEffect(
+        React.useCallback(() => {
+            // Enforce Portrait when this screen is focused
+            ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.PORTRAIT_UP);
+        }, [])
+    );
+
 
     return (
         <Container centered style={styles.container}>
@@ -17,68 +30,86 @@ export const ResultsScreen = ({ navigation, route }: any) => {
                 </AppText>
             </View>
 
-            {videoUri && (
+            <View style={styles.buttonGroup}>
+                {videoUri ? (
+                    <Button
+                        title="📹 Guardar / Ver Video"
+                        onPress={() => navigation.navigate('VideoReview', { videoUri, category, score, total, wordHistory })}
+                        variant="primary"
+                        style={styles.mainButton}
+                    />
+                ) : (
+                    <AppText style={styles.noVideoText}>Video no disponible</AppText>
+                )}
+
                 <Button
-                    title="🎬 Ver Video del Juego"
-                    onPress={() => navigation.navigate('VideoReview', { videoUri, category, score, total })}
+                    title="🔄 Jugar Otra Vez"
+                    onPress={() => navigation.navigate('CategorySelection')}
+                    style={styles.actionButton}
                     variant="secondary"
-                    style={{ width: '80%', marginBottom: 16 }}
                 />
-            )}
 
-            <Button
-                title="🔄 Jugar Otra Vez"
-                onPress={() => navigation.navigate('CategorySelection')}
-                style={{ width: '80%', marginTop: 40 }}
-            />
-
-            <Button
-                title="🏠 Inicio"
-                variant="outline"
-                onPress={() => navigation.navigate('Home')}
-                style={{ width: '80%' }}
-            />
+                <Button
+                    title="🏠 Inicio"
+                    variant="outline"
+                    onPress={() => navigation.navigate('Home')}
+                    style={styles.actionButton}
+                />
+            </View>
         </Container>
     );
 };
 
 const styles = StyleSheet.create({
     container: {
-        paddingVertical: 40,
+        paddingVertical: spacing.xl,
+        paddingHorizontal: spacing.l,
     },
     header: {
-        marginBottom: 20,
-        color: '#FFD700', // Gold
+        marginBottom: spacing.l,
+        color: theme.colors.accent,
         textAlign: 'center',
     },
     scoreContainer: {
         alignItems: 'center',
         justifyContent: 'center',
-        marginVertical: 20,
-        padding: 40,
-        backgroundColor: '#1E1E1E', // Dark Surface
-        borderRadius: 30, // More rounded
-        width: '85%',
+        marginVertical: spacing.xl,
+        padding: spacing.xl,
+        backgroundColor: theme.colors.surface,
+        borderRadius: theme.borderRadius.xl,
+        width: '100%',
         borderWidth: 1,
-        borderColor: '#333',
+        borderColor: theme.colors.border,
         // Glow effect
-        shadowColor: "#6C63FF",
-        shadowOffset: { width: 0, height: 0 },
-        shadowOpacity: 0.4,
-        shadowRadius: 20,
-        elevation: 10,
+        ...theme.shadows.glow,
     },
     scoreLabel: {
-        fontSize: 24,
-        color: '#aaa',
+        fontSize: 20,
+        color: theme.colors.textSecondary,
         textTransform: 'uppercase',
-        letterSpacing: 4, // More breathing room
-        marginBottom: 10,
+        letterSpacing: 4,
+        marginBottom: spacing.s,
     },
     scoreValue: {
-        fontSize: 90,
-        lineHeight: 100, // Explicit line height to prevent clipping
+        fontSize: 80,
+        lineHeight: 90,
         fontWeight: '800',
-        color: '#fff',
+        color: theme.colors.text,
+    },
+    buttonGroup: {
+        width: '100%',
+        gap: spacing.m,
+        marginTop: spacing.m,
+    },
+    mainButton: {
+        height: 56,
+    },
+    actionButton: {
+        width: '100%',
+    },
+    noVideoText: {
+        opacity: 0.5,
+        marginBottom: spacing.l,
+        textAlign: 'center',
     }
 });

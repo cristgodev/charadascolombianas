@@ -24,6 +24,12 @@ export const useGameTimer = (initialTime: number = 60, onTimeEnd?: () => void) =
         setTimeLeft(initialTime);
     }, [initialTime, stopTimer]);
 
+    const onTimeEndRef = useRef(onTimeEnd);
+
+    useEffect(() => {
+        onTimeEndRef.current = onTimeEnd;
+    }, [onTimeEnd]);
+
     useEffect(() => {
         if (isRunning && timeLeft > 0) {
             intervalRef.current = setInterval(() => {
@@ -31,7 +37,7 @@ export const useGameTimer = (initialTime: number = 60, onTimeEnd?: () => void) =
                     if (prev <= 1) {
                         clearInterval(intervalRef.current as NodeJS.Timeout);
                         setIsRunning(false);
-                        if (onTimeEnd) onTimeEnd();
+                        if (onTimeEndRef.current) onTimeEndRef.current();
                         return 0;
                     }
                     return prev - 1;
@@ -44,7 +50,8 @@ export const useGameTimer = (initialTime: number = 60, onTimeEnd?: () => void) =
                 clearInterval(intervalRef.current);
             }
         };
-    }, [isRunning, onTimeEnd]);
+    }, [isRunning]); // Removed onTimeEnd from dependencies
+
 
     return { timeLeft, isRunning, startTimer, stopTimer, resetTimer };
 };

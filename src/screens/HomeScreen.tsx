@@ -1,12 +1,14 @@
 import React from 'react';
 import { View, StyleSheet, TouchableOpacity } from 'react-native';
 import { Container, AppText, Button } from '../components';
+import { theme, spacing } from '../theme';
+
 
 export const HomeScreen = ({ navigation }: any) => {
     return (
         <Container style={styles.container}>
             <View style={styles.header}>
-                <AppText variant="display" color="#FFD700" centered>CHARADAS</AppText>
+                <AppText variant="display" color={theme.colors.accent} centered>CHARADAS</AppText>
                 <AppText variant="subheader" centered style={styles.subtitle}>La Fiesta en tu Bolsillo 🇨🇴</AppText>
             </View>
 
@@ -16,9 +18,13 @@ export const HomeScreen = ({ navigation }: any) => {
                     onPress={() => navigation.navigate('CategorySelection')}
                     activeOpacity={0.9}
                 >
-                    <AppText variant="display" style={styles.cardIcon}>🎮</AppText>
-                    <AppText variant="header" style={styles.cardTitle}>¡A JUGAR!</AppText>
-                    <AppText variant="body" style={styles.cardDesc}>Modo Clásico y Fiesta</AppText>
+                    <View style={styles.playContent}>
+                        <AppText variant="display" style={styles.cardIcon}>🎮</AppText>
+                        <View>
+                            <AppText variant="header" style={styles.cardTitle}>¡A JUGAR!</AppText>
+                            <AppText variant="body" style={styles.cardDesc}>Modo Clásico y Fiesta</AppText>
+                        </View>
+                    </View>
                 </TouchableOpacity>
 
                 <View style={styles.row}>
@@ -45,68 +51,73 @@ export const HomeScreen = ({ navigation }: any) => {
 
 const styles = StyleSheet.create({
     container: {
-        paddingTop: 60,
-        paddingHorizontal: 20,
+        paddingTop: spacing.xxl,
+        paddingHorizontal: spacing.l,
     },
     header: {
-        marginBottom: 40,
+        marginBottom: spacing.xl,
         alignItems: 'center',
     },
     subtitle: {
         opacity: 0.8,
-        marginTop: 8,
+        marginTop: spacing.s,
+        color: theme.colors.textSecondary,
     },
     menu: {
         flex: 1,
-        gap: 20,
+        gap: spacing.l,
+        justifyContent: 'center', // Center vertically for balance
+        paddingBottom: spacing.xxl,
     },
     card: {
-        borderRadius: 24,
-        padding: 24,
+        borderRadius: theme.borderRadius.l,
+        padding: spacing.l,
         justifyContent: 'center',
         alignItems: 'center',
-        shadowColor: "#000",
-        shadowOffset: {
-            width: 0,
-            height: 4,
-        },
-        shadowOpacity: 0.30,
-        shadowRadius: 4.65,
-        elevation: 8,
+        ...theme.shadows.default,
     },
     playCard: {
-        flex: 2,
-        backgroundColor: '#6C63FF', // Primary
+        flex: 1.5, // Give slightly less dominance than 2 to balance space
+        backgroundColor: theme.colors.primary,
         borderWidth: 1,
         borderColor: 'rgba(255,255,255,0.1)',
+        ...theme.shadows.glow, // Add glow for main action
+    },
+    playContent: {
+        alignItems: 'center',
+        gap: spacing.m,
     },
     row: {
         flexDirection: 'row',
-        gap: 16,
-        height: 140,
+        gap: spacing.m,
+        height: 160, // Fixed reasonable height for bottom cards
     },
     secondaryCard: {
         flex: 1,
-        backgroundColor: '#1E1E1E', // Surface
+        backgroundColor: theme.colors.surface,
         borderWidth: 1,
-        borderColor: '#333',
+        borderColor: theme.colors.border,
     },
     cardIcon: {
-        fontSize: 60,
-        marginBottom: 10,
+        fontSize: 70, // Larger icon
+        marginBottom: spacing.s,
     },
     cardIconSmall: {
         fontSize: 32,
-        marginBottom: 8,
+        marginBottom: spacing.s,
     },
     cardTitle: {
-        color: 'white',
+        color: theme.colors.text,
         textTransform: 'uppercase',
-        letterSpacing: 1,
+        letterSpacing: 2,
+        fontWeight: '800',
+        textAlign: 'center',
     },
     cardDesc: {
-        color: 'rgba(255,255,255,0.7)',
-        marginTop: 4,
+        color: 'rgba(255,255,255,0.8)',
+        marginTop: spacing.xs,
         fontSize: 14,
+        textAlign: 'center',
     }
 });
+

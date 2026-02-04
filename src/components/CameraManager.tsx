@@ -68,7 +68,7 @@ export const CameraManager = forwardRef<CameraManagerHandle, CameraManagerProps>
             onRecordingStartRef.current?.();
 
             const data = await cameraRef.current.recordAsync({
-                maxDuration: 120,
+                maxDuration: 300,
             });
 
             if (data?.uri) {
@@ -99,7 +99,7 @@ export const CameraManager = forwardRef<CameraManagerHandle, CameraManagerProps>
             <CameraView
                 ref={cameraRef}
                 style={styles.camera}
-                facing="back"
+                facing="front"
                 mode="video"
                 mute={false}
                 onCameraReady={handleCameraReady}

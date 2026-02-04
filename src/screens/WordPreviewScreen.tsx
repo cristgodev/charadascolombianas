@@ -1,11 +1,23 @@
 import React, { useState, useEffect } from 'react';
 import { View, StyleSheet, ScrollView, LayoutAnimation, Platform, UIManager } from 'react-native';
+import { useFocusEffect } from '@react-navigation/native';
+import * as ScreenOrientation from 'expo-screen-orientation';
 import { Container, AppText, Button } from '../components';
+import { theme, spacing } from '../theme';
+
 
 export const WordPreviewScreen = ({ navigation, route }: any) => {
     const { category, totalPool } = route.params || { category: 'Mock', totalPool: [] };
 
+    useFocusEffect(
+        React.useCallback(() => {
+            // Enforce Portrait when this screen is focused
+            ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.PORTRAIT_UP);
+        }, [])
+    );
+
     const [displayedWords, setDisplayedWords] = useState<string[]>([]);
+    const [timeLeft, setTimeLeft] = useState(15);
 
     useEffect(() => {
         if (Platform.OS === 'android') {
@@ -15,7 +27,26 @@ export const WordPreviewScreen = ({ navigation, route }: any) => {
         }
         // Initial shuffle
         shuffleAndPick();
-    }, []);
+
+        // 15 seconds timer
+        const timer = setInterval(() => {
+            setTimeLeft((prev) => {
+                if (prev <= 0) {
+                    clearInterval(timer);
+                    return 0;
+                }
+                return prev - 1;
+            });
+        }, 1000);
+
+        return () => clearInterval(timer);
+    }, []); // Empty dependency array ensures it only runs once on mount
+
+    useEffect(() => {
+        if (timeLeft === 0) {
+            startGame();
+        }
+    }, [timeLeft]);
 
     const shuffleAndPick = () => {
         if (!totalPool || totalPool.length === 0) return;
@@ -40,14 +71,21 @@ export const WordPreviewScreen = ({ navigation, route }: any) => {
         <Container style={styles.container}>
             <View style={styles.header}>
                 <AppText variant="subheader" centered style={styles.title}>{category}</AppText>
-                <AppText variant="caption" centered>Estas son tus palabras posibles</AppText>
+                <AppText variant="caption" centered style={styles.subtitle}>Memoriza las palabras</AppText>
+                <AppText variant="display" centered style={{
+                    ...styles.timer,
+                    color: timeLeft <= 5 ? theme.colors.error : theme.colors.text
+                }}>
+                    {timeLeft}
+                </AppText>
             </View>
+
 
             <View style={styles.previewContainer}>
                 <ScrollView contentContainerStyle={styles.wordsGrid} showsVerticalScrollIndicator={false}>
                     {displayedWords.length === 0 ? (
-                        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', height: 200 }}>
-                            <AppText style={{ color: '#888', textAlign: 'center' }}>No hay palabras disponibles para esta categoría.</AppText>
+                        <View style={styles.emptyContainer}>
+                            <AppText style={styles.emptyText}>No hay palabras disponibles para esta categoría.</AppText>
                         </View>
                     ) : (
                         displayedWords.map((word, index) => (
@@ -64,7 +102,7 @@ export const WordPreviewScreen = ({ navigation, route }: any) => {
                     title="🔄 Barajar"
                     onPress={shuffleAndPick}
                     variant="secondary"
-                    style={{ marginBottom: 16 }}
+                    style={{ marginBottom: spacing.m }}
                 />
                 <Button
                     title="▶️ ¡Hágale!"
@@ -77,43 +115,65 @@ export const WordPreviewScreen = ({ navigation, route }: any) => {
 
 const styles = StyleSheet.create({
     container: {
-        padding: 20,
-        paddingTop: 50,
+        padding: spacing.l,
+        paddingTop: spacing.xxl,
     },
     header: {
-        marginBottom: 20,
+        marginBottom: spacing.l,
+        alignItems: 'center',
     },
     title: {
-        fontSize: 24,
-        color: '#FFD700',
-        marginBottom: 8,
+        color: theme.colors.accent,
+        marginBottom: spacing.xs,
+    },
+    subtitle: {
+        color: theme.colors.textSecondary,
+    },
+    timer: {
+        marginTop: spacing.s,
+        fontSize: 48, // Big timer
+        fontWeight: '800',
     },
     previewContainer: {
         flex: 1,
-        backgroundColor: 'rgba(255,255,255,0.05)',
-        borderRadius: 16,
-        padding: 16,
-        marginBottom: 20,
+        backgroundColor: theme.colors.surfaceHighlight, // Slightly lighter than background
+        borderRadius: theme.borderRadius.l,
+        padding: spacing.m,
+        marginBottom: spacing.l,
+        borderWidth: 1,
+        borderColor: theme.colors.border,
     },
     wordsGrid: {
         flexDirection: 'row',
         flexWrap: 'wrap',
         justifyContent: 'center',
-        gap: 8,
+        gap: spacing.s,
     },
     wordTag: {
-        backgroundColor: '#333',
-        paddingVertical: 6,
-        paddingHorizontal: 12,
-        borderRadius: 12,
+        backgroundColor: theme.colors.surface,
+        paddingVertical: spacing.s,
+        paddingHorizontal: spacing.m,
+        borderRadius: theme.borderRadius.s,
         borderWidth: 1,
-        borderColor: '#555',
+        borderColor: theme.colors.border,
     },
     wordText: {
         fontSize: 14,
-        color: '#eee',
+        color: theme.colors.text,
+        fontWeight: '600',
+    },
+    emptyContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        height: 200,
+    },
+    emptyText: {
+        color: theme.colors.textMuted,
+        textAlign: 'center',
     },
     actions: {
         justifyContent: 'flex-end',
     }
 });
+
