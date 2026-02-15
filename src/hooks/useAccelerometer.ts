@@ -38,25 +38,27 @@ export const useAccelerometer = (enabled: boolean = true) => {
 
     const processingData = (data: { x: number, y: number, z: number }) => {
         setData(data);
-        // Let's rely on Z for "Facing".
-        // If screen faces Horizontal (out to audience): Z is ~0.
-        // If screen faces Up (Ceiling): Z is -1 (or 1).
-        // If screen faces Down (Floor): Z is 1 (or -1).
-
         const { z } = data;
 
-        // Adjusted Sensitivity (User Request):
-        // Previous was 0.7 (>45 degrees).
-        // New is 0.45 (~26 degrees) to make it easier to trigger.
-        // Neutral window is smaller (-0.45 to 0.45)
+        // HYSTERESIS IMPLEMENTATION
+        // Trigger Action Threshold: 0.70 (Requires distinct tilt)
+        // Return to Neutral Threshold: 0.35 (Must basically return to center)
 
-        if (z < -0.60) {
-            setTilt('UP');
-        } else if (z > 0.60) {
-            setTilt('DOWN');
-        } else {
-            setTilt('NEUTRAL');
-        }
+        const TRIGGER_THRESHOLD = 0.70;
+        const RESET_THRESHOLD = 0.35;
+
+        setTilt((currentTilt) => {
+            if (currentTilt === 'NEUTRAL') {
+                // Harder to leave neutral
+                if (z < -TRIGGER_THRESHOLD) return 'UP';
+                if (z > TRIGGER_THRESHOLD) return 'DOWN';
+                return 'NEUTRAL';
+            } else {
+                // Must come ALL the way back to near-center to reset
+                if (Math.abs(z) < RESET_THRESHOLD) return 'NEUTRAL';
+                return currentTilt; // Stick to current state if in "dead zone"
+            }
+        });
     }
 
     const _unsubscribe = () => {

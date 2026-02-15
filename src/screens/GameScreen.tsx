@@ -1,32 +1,35 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, StyleSheet, TouchableOpacity } from 'react-native'; // Standard imports
+import { View, StyleSheet, TouchableOpacity } from 'react-native';
 import { Container, AppText, Button, CameraManager, CameraManagerHandle } from '../components';
 import { useGameTimer, useAccelerometer } from '../hooks';
-
+import { useLanguage } from '../context/LanguageContext';
+import { useSound } from '../context/SoundContext';
 import * as ScreenOrientation from 'expo-screen-orientation';
-import * as Haptics from 'expo-haptics';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { CharadaCard } from '../data/categories';
 
-import { theme, spacing } from '../theme';
-
+// Mock words just in case
 const MOCK_WORDS = ['Error', 'No Data'];
 
 export const GameScreen = ({ navigation, route }: any) => {
-    // Get params
-    const { category, words: initialWords } = route.params || {};
+    const { t } = useLanguage();
+    const insets = useSafeAreaInsets();
+    const { playSound, playHaptic, shuffleMusic, setVolumeModifier } = useSound();
+    // Get params - prioritize param duration
+    const { category, words: initialWords, duration = 60 } = route.params || {};
 
     const [score, setScore] = useState(0);
     const [wordIndex, setWordIndex] = useState(0);
     const [wordsAnswered, setWordsAnswered] = useState(0);
     // Shuffle words on init
-    const [words, setWords] = useState<string[]>([]);
+    const [words, setWords] = useState<(string | CharadaCard)[]>([]);
     const [gameStatus, setGameStatus] = useState<'READY' | 'PLAYING' | 'PAUSED' | 'FINISHED'>('READY');
 
-    // Word Tracking for Video Overlay
+    // Word Tracking for Video Overlay (From HEAD)
     const [wordHistory, setWordHistory] = useState<{ word: string, timestamp: number, result: 'correct' | 'pass' | 'pending' }[]>([]);
     const [gameStartTime, setGameStartTime] = useState<number>(0);
 
     // Tilt handling mechanism
-    // We need to wait for Neutral before accepting a new tilt action.
     const [readyForAction, setReadyForAction] = useState(true);
 
     // Video Recording
@@ -50,6 +53,8 @@ export const GameScreen = ({ navigation, route }: any) => {
         return () => {
             // Force back to Portrait on exit
             ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.PORTRAIT_UP);
+            // Ensure volume is reset incase of unexpected unmount
+            setVolumeModifier(1.0);
         };
     }, []);
 
@@ -59,11 +64,12 @@ export const GameScreen = ({ navigation, route }: any) => {
 
     const finishGame = (finalScore: number, finalTotal: number) => {
         setGameStatus('FINISHED');
+        setVolumeModifier(1.0); // Restore full volume
         ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.PORTRAIT_UP);
 
         // Use a timeout as failsafe in case recording callback never fires
         const failsafeTimeout = setTimeout(() => {
-            navigation.navigate('Results', {
+            navigation.replace('Results', {
                 score: finalScore,
                 total: finalTotal,
                 videoUri: null,
@@ -75,13 +81,11 @@ export const GameScreen = ({ navigation, route }: any) => {
         // Stop recording if running
         if (cameraRef.current) {
             cameraRef.current.stopRecording().then(() => {
-                // We could cancel timeout here if we wanted to be strict, 
-                // but the callback usually fires immediately after.
-                // Actually, let's keep the timeout active until navigation happens.
+                // Recording stopped
             });
         } else {
             clearTimeout(failsafeTimeout);
-            navigation.navigate('Results', {
+            navigation.replace('Results', {
                 score: finalScore,
                 total: finalTotal,
                 videoUri: null,
@@ -94,9 +98,8 @@ export const GameScreen = ({ navigation, route }: any) => {
     const onRecordingFinished = (uri: string) => {
         setRecordedUri(uri);
         // Navigate when recording is done
-        // Check if game is finished to avoid premature navigation not triggered by game end
         if (gameStatus === 'FINISHED' || wordsAnswered >= 10) {
-            navigation.navigate('Results', {
+            navigation.replace('Results', {
                 score,
                 total: wordsAnswered,
                 videoUri: uri,
@@ -106,8 +109,8 @@ export const GameScreen = ({ navigation, route }: any) => {
         }
     };
 
-    const { timeLeft, startTimer, stopTimer, resetTimer } = useGameTimer(120, onTimeEnd);
-
+    // Use Dynamic Duration (Incoming)
+    const { timeLeft, startTimer, stopTimer, resetTimer } = useGameTimer(duration, onTimeEnd);
     const { tilt, data } = useAccelerometer(gameStatus === 'PLAYING');
 
     useEffect(() => {
@@ -137,6 +140,11 @@ export const GameScreen = ({ navigation, route }: any) => {
         }
     }, [tilt, readyForAction, gameStatus]);
 
+    const getCurrentWordString = () => {
+        const current = words[wordIndex];
+        return typeof current === 'string' ? current : current.word;
+    };
+
     const handleNextWord = (correct: boolean) => {
         const nextAnsweredCount = wordsAnswered + 1;
         setWordsAnswered(nextAnsweredCount);
@@ -149,7 +157,6 @@ export const GameScreen = ({ navigation, route }: any) => {
             const newHistory = [...prev];
             if (newHistory.length > 0) {
                 // Update the last word with result (the one we just finished)
-                // Note: The timestamp stored is when it started.
                 newHistory[newHistory.length - 1].result = correct ? 'correct' : 'pass';
             }
             return newHistory;
@@ -157,33 +164,34 @@ export const GameScreen = ({ navigation, route }: any) => {
 
         if (correct) {
             setScore(newScore);
-            Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+            playHaptic('success');
+            playSound('correct');
         } else {
-            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
+            playHaptic('impact');
+            playSound('wrong');
         }
 
-        // Check condition: 10 words
-        if (nextAnsweredCount >= 10) {
-            finishGame(newScore, nextAnsweredCount);
-            return;
-        }
-
-        // Move to next word
-        setReadyForAction(false); // require returning to neutral
-        setReadyForAction(false); // require returning to neutral
+        // Move to next word (Use logic from HEAD to support history)
+        setReadyForAction(false);
 
         let nextIndex = (wordIndex + 1) % words.length;
         setWordIndex(nextIndex);
 
-        // Record Next Word Start Time
+        // Record Next Word Start Time (HEAD feature)
+        // Need to resolve the string for the history log as well
+        const nextWordItem = words[nextIndex];
+        const nextWordString = typeof nextWordItem === 'string' ? nextWordItem : nextWordItem.word;
+
         const nextTime = Date.now() - gameStartTime;
         setWordHistory(prev => [
             ...prev,
-            { word: words[nextIndex], timestamp: nextTime, result: 'pending' }
+            { word: nextWordString, timestamp: nextTime, result: 'pending' }
         ]);
     };
 
     const startGame = () => {
+        shuffleMusic();
+        setVolumeModifier(0.2); // Soft background music
         setScore(0);
         setWordIndex(0);
         setWordsAnswered(0);
@@ -193,9 +201,11 @@ export const GameScreen = ({ navigation, route }: any) => {
         // Start Recording Logic
         const now = Date.now();
         setGameStartTime(now);
-        // Record first word (timestamp 0 relative to game start)
-        // Note: Camera starts async, so there might be a slight offset, but close enough.
-        setWordHistory([{ word: words[0], timestamp: 0, result: 'pending' }]);
+
+        const firstWordItem = words[0];
+        const firstWordString = typeof firstWordItem === 'string' ? firstWordItem : firstWordItem.word;
+
+        setWordHistory([{ word: firstWordString, timestamp: 0, result: 'pending' }]);
 
         // Start Recording
         cameraRef.current?.startRecording();
@@ -203,6 +213,7 @@ export const GameScreen = ({ navigation, route }: any) => {
 
     const exitGame = () => {
         setGameStatus('FINISHED');
+        setVolumeModifier(1.0);
         stopTimer();
         cameraRef.current?.stopRecording();
         ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.PORTRAIT_UP);
@@ -210,55 +221,93 @@ export const GameScreen = ({ navigation, route }: any) => {
     }
 
     return (
-        <Container centered style={[
-            styles.container,
-            tilt === 'DOWN' ? styles.bgCorrect : {}, // Visual feedback reversed
-            tilt === 'UP' ? styles.bgPass : {}
-        ] as any}>
+        <Container centered style={styles.container}>
             <CameraManager
                 ref={cameraRef}
                 onRecordingFinished={onRecordingFinished}
             />
-            <TouchableOpacity style={styles.exitButton} onPress={exitGame}>
-                <AppText style={styles.exitButtonText}>Salir</AppText>
+            {/* Overlay Tint */}
+            <View style={{
+                ...StyleSheet.absoluteFillObject,
+                backgroundColor: tilt === 'DOWN' ? 'rgba(46, 204, 113, 0.6)' : // Green
+                    tilt === 'UP' ? 'rgba(231, 76, 60, 0.6)' :   // Red
+                        'rgba(0,0,0,0.3)' // Default dark tint
+            }} />
+
+            <TouchableOpacity
+                style={[styles.exitButton, { top: Math.max(insets.top, 20) + 20, left: Math.max(insets.left, 20) + 20 }]}
+                onPress={exitGame}
+            >
+                <AppText style={styles.exitButtonText}>{t('exit')}</AppText>
             </TouchableOpacity>
 
             {gameStatus === 'FINISHED' && (
-                <View style={styles.centerContent}>
-                    <AppText variant="header" style={styles.statusText}>Guardando...</AppText>
-                    <AppText style={styles.statusSubtext}>Procesando video de recuerdo 🎥</AppText>
-                    <AppText style={styles.loadingText}>Puede tardar unos segundos...</AppText>
+                <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+                    <AppText variant="header">{t('saving')}</AppText>
+                    <AppText>{t('processing_video')}</AppText>
+                    {/* Music Toggle for Post-Game Vibes */}
+                    <TouchableOpacity
+                        style={{ marginTop: 20, padding: 10, backgroundColor: 'rgba(255,255,255,0.2)', borderRadius: 20 }}
+                        onPress={shuffleMusic}
+                    >
+                        <AppText style={{ fontSize: 16 }}>🎵 Cambiar Música</AppText>
+                    </TouchableOpacity>
                 </View>
             )}
 
             {gameStatus === 'READY' && (
-                <View style={styles.centerContent}>
-                    <AppText variant="display" style={styles.readyTitle}>¡Prepárate!</AppText>
-                    <AppText style={styles.instruction}>Ponte el cel en la frente 📱</AppText>
-                    <Button title="¡Hágale!" onPress={startGame} style={styles.startButton} />
-                </View>
+                <>
+                    <AppText variant="header">{t('prepare')}</AppText>
+                    <AppText style={styles.instruction}>{t('instruction_forehead')}</AppText>
+                    <Button title={t('lets_go')} onPress={startGame} style={{ marginTop: 20 }} />
+                </>
             )}
 
             {gameStatus === 'PLAYING' && (
                 <>
-                    <AppText style={styles.timer}>{timeLeft}s</AppText>
-                    <AppText style={styles.counter}>{wordsAnswered}/10</AppText>
+                    <AppText style={[styles.timer, { top: Math.max(insets.top, 20) + 20, right: Math.max(insets.right, 20) + 20 }]}>{timeLeft}s</AppText>
+                    <AppText style={[styles.counter, { bottom: Math.max(insets.bottom, 20) + 20, left: Math.max(insets.left, 20) + 20 }]}>{wordsAnswered}</AppText>
                     <View style={styles.wordContainer}>
-                        <AppText
-                            variant="display" // Use display for bigger impact
-                            style={styles.word}
-                            adjustsFontSizeToFit
-                            numberOfLines={3}
-                        >
-                            {words[wordIndex]}
-                        </AppText>
+                        <View style={styles.wordCard}>
+                            <AppText
+                                variant="header"
+                                style={styles.word}
+                                adjustsFontSizeToFit
+                                numberOfLines={3}
+                            >
+                                {getCurrentWordString()}
+                            </AppText>
+                            {/* Rich Content for Revelation Support (or other complex cards) */}
+                            {typeof words[wordIndex] !== 'string' && (
+                                <View style={styles.richContentContainer}>
+
+                                    {/* Verse - Leading with reference for context */}
+                                    {(words[wordIndex] as CharadaCard).verse && (
+                                        <AppText style={styles.verseText}>
+                                            {(words[wordIndex] as CharadaCard).verse}
+                                        </AppText>
+                                    )}
+
+                                    {/* Description - The core meaning/Resumen */}
+                                    {(words[wordIndex] as CharadaCard).description && (
+                                        <AppText style={styles.descText} adjustsFontSizeToFit numberOfLines={5}>
+                                            {(words[wordIndex] as CharadaCard).description}
+                                        </AppText>
+                                    )}
+
+                                    {/* Mime - Practical advice (Fallback/Legacy) */}
+                                    {(words[wordIndex] as CharadaCard).mime && (
+                                        <AppText style={styles.mimeText} adjustsFontSizeToFit numberOfLines={2}>
+                                            🎭 {(words[wordIndex] as CharadaCard).mime}
+                                        </AppText>
+                                    )}
+                                </View>
+                            )}
+                        </View>
                     </View>
                     <AppText style={styles.instruction}>
-                        {readyForAction ? "Abajo: ¡Eso! / Arriba: Paso" : "Vuelve al centro"}
+                        {readyForAction ? t('instruction_tilt') : t('instruction_neutral')}
                     </AppText>
-
-                    {/* Debug Info: Optional, can comment out for prod */}
-                    {/* <AppText style={styles.debug}>Tilt: {tilt} (Z: {data.z.toFixed(2)})</AppText> */}
                 </>
             )}
         </Container>
@@ -267,52 +316,78 @@ export const GameScreen = ({ navigation, route }: any) => {
 
 const styles = StyleSheet.create({
     container: {
-        // dynamic bg colors will be applied via style props
+        // dynamic bg
     },
-    bgCorrect: {
-        backgroundColor: theme.colors.success,
-    },
-    bgPass: {
-        backgroundColor: theme.colors.error,
+    wordCard: {
+        padding: 20,
+        borderRadius: 20,
+        width: '100%',
+        alignItems: 'center',
     },
     timer: {
         fontSize: 40,
         fontWeight: 'bold',
         position: 'absolute',
-        top: 50, // Hardcoded safe margin for landscape header
-        right: 80, // Moved significantly inward
-        zIndex: 20,
-        color: theme.colors.text,
-        textShadowColor: 'rgba(0,0,0,0.7)',
-        textShadowOffset: { width: 1, height: 1 },
-        textShadowRadius: 3,
+        top: 40,
+        right: 60,
+        // Fix for text clipping on some devices
+        lineHeight: 50,
+        padding: 5,
+        textAlignVertical: 'center',
     },
     counter: {
         fontSize: 24,
         position: 'absolute',
-        bottom: 50, // Safe bottom margin
+        bottom: 80, // Moved up from 40
         left: 60,
         fontWeight: 'bold',
-        color: 'rgba(255,255,255,0.7)'
+        color: '#eee'
     },
     wordContainer: {
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
-        paddingHorizontal: spacing.xxl,
-        width: '80%', // Limit width to prevent reading edge-to-edge
+        paddingHorizontal: 40,
     },
     word: {
-        fontSize: 56, // Large but legible
-        lineHeight: 64,
+        fontSize: 60,
+        lineHeight: 70,
         textAlign: 'center',
         fontWeight: '900',
         textShadowColor: 'rgba(0,0,0,0.5)',
         textShadowOffset: { width: 2, height: 2 },
         textShadowRadius: 4,
+        marginBottom: 10,
+    },
+    richContentContainer: {
+        alignItems: 'center',
+        marginTop: 10,
+        backgroundColor: 'rgba(0,0,0,0.3)',
+        padding: 10,
+        borderRadius: 15,
+        width: '90%'
+    },
+    verseText: {
+        fontSize: 24,
+        fontWeight: 'bold',
+        color: '#FFD700', // Gold
+        marginBottom: 5,
+        textAlign: 'center'
+    },
+    descText: {
+        fontSize: 18,
+        color: '#FFF',
+        textAlign: 'center',
+        marginBottom: 5,
+        fontStyle: 'italic'
+    },
+    mimeText: {
+        fontSize: 16,
+        color: '#CCC',
+        textAlign: 'center'
     },
     instruction: {
-        marginBottom: spacing.m,
+        marginBottom: 20,
         opacity: 0.8,
         fontSize: 18,
         fontWeight: '600',
@@ -320,21 +395,15 @@ const styles = StyleSheet.create({
         textShadowOffset: { width: 1, height: 1 },
         textShadowRadius: 2,
     },
-    debug: {
-        position: 'absolute',
-        bottom: 10,
-        fontSize: 10,
-        color: '#aaa',
-    },
     exitButton: {
         position: 'absolute',
-        top: 50, // Match timer top margin
+        top: 40,
         left: 60,
         zIndex: 10,
-        paddingVertical: spacing.s,
-        paddingHorizontal: spacing.m,
+        paddingVertical: 10,
+        paddingHorizontal: 20,
         backgroundColor: 'rgba(0,0,0,0.3)',
-        borderRadius: theme.borderRadius.m,
+        borderRadius: 10,
         borderWidth: 1,
         borderColor: 'rgba(255,255,255,0.2)'
     },
@@ -344,33 +413,5 @@ const styles = StyleSheet.create({
         color: 'white',
         textTransform: 'uppercase',
     },
-    centerContent: {
-        alignItems: 'center',
-        justifyContent: 'center',
-        gap: spacing.m,
-    },
-    statusText: {
-        fontSize: 32,
-        color: theme.colors.accent,
-    },
-    statusSubtext: {
-        fontSize: 18,
-        color: theme.colors.text,
-    },
-    loadingText: {
-        marginTop: spacing.s,
-        fontSize: 14,
-        opacity: 0.7,
-        color: theme.colors.textSecondary,
-    },
-    readyTitle: {
-        fontSize: 48,
-        color: theme.colors.accent,
-        marginBottom: spacing.m,
-    },
-    startButton: {
-        marginTop: spacing.l,
-        minWidth: 200,
-    }
-});
 
+});

@@ -8,8 +8,8 @@
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
     "splash": {
-      "image": "./assets/splash-icon.png",
-      "resizeMode": "contain",
+      "image": "./assets/portada_inicio.png",
+      "resizeMode": "cover",
       "backgroundColor": "#ffffff"
     },
     "ios": {
@@ -44,7 +44,8 @@
           "savePhotosPermission": "Necesitamos acceso para guardar los videos de las partidas."
         }
       ],
-      "expo-screen-orientation"
+      "expo-screen-orientation",
+      "expo-localization"
     ],
     "web": {
       "favicon": "./assets/favicon.png"

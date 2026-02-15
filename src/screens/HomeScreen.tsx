@@ -1,123 +1,81 @@
 import React from 'react';
-import { View, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, StyleSheet, TouchableOpacity, ImageBackground, Dimensions } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { Container, AppText, Button } from '../components';
-import { theme, spacing } from '../theme';
 
+const { width, height } = Dimensions.get('window');
 
 export const HomeScreen = ({ navigation }: any) => {
     return (
-        <Container style={styles.container}>
-            <View style={styles.header}>
-                <AppText variant="display" color={theme.colors.accent} centered>CHARADAS</AppText>
-                <AppText variant="subheader" centered style={styles.subtitle}>La Fiesta en tu Bolsillo 🇨🇴</AppText>
-            </View>
-
-            <View style={styles.menu}>
+        <ImageBackground
+            source={require('../../assets/portada_inicio.png')}
+            style={styles.background}
+            resizeMode="stretch"
+        >
+            <Container noPadding style={styles.overlayContainer}>
+                {/* Settings Top Right */}
                 <TouchableOpacity
-                    style={[styles.card, styles.playCard]}
-                    onPress={() => navigation.navigate('CategorySelection')}
-                    activeOpacity={0.9}
+                    style={styles.settingsButtonTop}
+                    onPress={() => navigation.navigate('Settings')}
+                    activeOpacity={0.7}
                 >
-                    <View style={styles.playContent}>
-                        <AppText variant="display" style={styles.cardIcon}>🎮</AppText>
-                        <View>
-                            <AppText variant="header" style={styles.cardTitle}>¡A JUGAR!</AppText>
-                            <AppText variant="body" style={styles.cardDesc}>Modo Clásico y Fiesta</AppText>
-                        </View>
-                    </View>
+                    <Ionicons name="settings-sharp" size={24} color="white" />
                 </TouchableOpacity>
 
-                <View style={styles.row}>
-                    <TouchableOpacity
-                        style={[styles.card, styles.secondaryCard]}
-                        onPress={() => { /* TODO: Create */ }}
-                    >
-                        <AppText variant="header" style={styles.cardIconSmall}>✨</AppText>
-                        <AppText variant="button">Crear</AppText>
-                    </TouchableOpacity>
-
-                    <TouchableOpacity
-                        style={[styles.card, styles.secondaryCard]}
-                        onPress={() => navigation.navigate('Settings')}
-                    >
-                        <AppText variant="header" style={styles.cardIconSmall}>⚙️</AppText>
-                        <AppText variant="button">Ajustes</AppText>
-                    </TouchableOpacity>
+                {/* Play Button Bottom Center */}
+                <View style={styles.bottomContainer}>
+                    <Button
+                        title="JUGAR"
+                        onPress={() => navigation.navigate('CategorySelection')}
+                        style={styles.playButton}
+                    />
                 </View>
-            </View>
-        </Container>
+            </Container>
+        </ImageBackground>
     );
 };
 
 const styles = StyleSheet.create({
-    container: {
-        paddingTop: spacing.xxl,
-        paddingHorizontal: spacing.l,
-    },
-    header: {
-        marginBottom: spacing.xl,
-        alignItems: 'center',
-    },
-    subtitle: {
-        opacity: 0.8,
-        marginTop: spacing.s,
-        color: theme.colors.textSecondary,
-    },
-    menu: {
+    background: {
         flex: 1,
-        gap: spacing.l,
-        justifyContent: 'center', // Center vertically for balance
-        paddingBottom: spacing.xxl,
+        width: '100%',
+        height: '100%',
     },
-    card: {
-        borderRadius: theme.borderRadius.l,
-        padding: spacing.l,
+    overlayContainer: {
+        flex: 1,
+        backgroundColor: 'transparent',
+    },
+    settingsButtonTop: {
+        position: 'absolute',
+        top: 50,
+        right: 20,
+        width: 44,
+        height: 44,
+        borderRadius: 22,
+        backgroundColor: 'rgba(0,0,0,0.3)',
+        alignItems: 'center',
         justifyContent: 'center',
+        zIndex: 10,
+    },
+    bottomContainer: {
+        position: 'absolute',
+        bottom: 50,
+        left: 0,
+        right: 0,
         alignItems: 'center',
-        ...theme.shadows.default,
+        paddingHorizontal: 40,
     },
-    playCard: {
-        flex: 1.5, // Give slightly less dominance than 2 to balance space
-        backgroundColor: theme.colors.primary,
-        borderWidth: 1,
-        borderColor: 'rgba(255,255,255,0.1)',
-        ...theme.shadows.glow, // Add glow for main action
+    playButton: {
+        width: '100%',
+        minHeight: 60,
+        borderRadius: 30,
+        shadowColor: "#000",
+        shadowOffset: {
+            width: 0,
+            height: 4,
+        },
+        shadowOpacity: 0.30,
+        shadowRadius: 4.65,
+        elevation: 8,
     },
-    playContent: {
-        alignItems: 'center',
-        gap: spacing.m,
-    },
-    row: {
-        flexDirection: 'row',
-        gap: spacing.m,
-        height: 160, // Fixed reasonable height for bottom cards
-    },
-    secondaryCard: {
-        flex: 1,
-        backgroundColor: theme.colors.surface,
-        borderWidth: 1,
-        borderColor: theme.colors.border,
-    },
-    cardIcon: {
-        fontSize: 70, // Larger icon
-        marginBottom: spacing.s,
-    },
-    cardIconSmall: {
-        fontSize: 32,
-        marginBottom: spacing.s,
-    },
-    cardTitle: {
-        color: theme.colors.text,
-        textTransform: 'uppercase',
-        letterSpacing: 2,
-        fontWeight: '800',
-        textAlign: 'center',
-    },
-    cardDesc: {
-        color: 'rgba(255,255,255,0.8)',
-        marginTop: spacing.xs,
-        fontSize: 14,
-        textAlign: 'center',
-    }
 });
-

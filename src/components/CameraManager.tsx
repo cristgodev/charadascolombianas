@@ -16,7 +16,7 @@ interface CameraManagerProps {
 export const CameraManager = forwardRef<CameraManagerHandle, CameraManagerProps>((props, ref) => {
     const [cameraPermission, requestCameraPermission] = useCameraPermissions();
     const [microphonePermission, requestMicrophonePermission] = useMicrophonePermissions();
-    const [mediaLibPermission, requestMediaLibPermission] = MediaLibrary.usePermissions();
+    const [mediaLibPermission, requestMediaLibPermission] = MediaLibrary.usePermissions({ writeOnly: true });
 
     const cameraRef = useRef<CameraView>(null);
     const [isRecording, setIsRecording] = useState(false);
@@ -110,15 +110,8 @@ export const CameraManager = forwardRef<CameraManagerHandle, CameraManagerProps>
 
 const styles = StyleSheet.create({
     container: {
-        // Hidden camera trick: 1x1 pixel or hidden behind content
-        width: 1,
-        height: 1,
-        overflow: 'hidden',
-        position: 'absolute',
-        top: 0,
-        left: 0,
-        opacity: 0, // Opacity 0 might prevent rendering on some Androids, but usually works for CameraView. 
-        // Better approach: make it 1x1 and transparent or Z-index -1
+        ...StyleSheet.absoluteFillObject,
+        backgroundColor: 'black', // fallback
     },
     camera: {
         flex: 1,

@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, ScrollView, LayoutAnimation, Platform, UIManager } from 'react-native';
+import { View, StyleSheet, ScrollView, LayoutAnimation, Platform, UIManager, TouchableOpacity, ImageBackground } from 'react-native';
+import { Container, AppText, Button } from '../components';
+import { useLanguage } from '../context/LanguageContext';
 import { useFocusEffect } from '@react-navigation/native';
 import * as ScreenOrientation from 'expo-screen-orientation';
-import { Container, AppText, Button } from '../components';
-import { theme, spacing } from '../theme';
-
+import { CharadaCard } from '../data/categories';
 
 export const WordPreviewScreen = ({ navigation, route }: any) => {
+    const { t } = useLanguage();
     const { category, totalPool } = route.params || { category: 'Mock', totalPool: [] };
 
     useFocusEffect(
@@ -16,8 +17,14 @@ export const WordPreviewScreen = ({ navigation, route }: any) => {
         }, [])
     );
 
-    const [displayedWords, setDisplayedWords] = useState<string[]>([]);
-    const [timeLeft, setTimeLeft] = useState(15);
+    const [displayedWords, setDisplayedWords] = useState<(string | CharadaCard)[]>([]);
+    const [timeLeft, setTimeLeft] = useState(15); // Kept for reference but countdown is used below
+
+    const [countdown, setCountdown] = useState(20);
+    const [isPaused, setIsPaused] = useState(false);
+
+    // Default game duration: 60 seconds
+    const [gameDuration, setGameDuration] = useState(60);
 
     useEffect(() => {
         if (Platform.OS === 'android') {
@@ -28,31 +35,22 @@ export const WordPreviewScreen = ({ navigation, route }: any) => {
         // Initial shuffle
         shuffleAndPick();
 
-        // 15 seconds timer
-        const timer = setInterval(() => {
-            setTimeLeft((prev) => {
-                if (prev <= 0) {
-                    clearInterval(timer);
-                    return 0;
-                }
-                return prev - 1;
-            });
-        }, 1000);
-
-        return () => clearInterval(timer);
-    }, []); // Empty dependency array ensures it only runs once on mount
+        // 15 seconds timer (Original) - replaced by countdown logic below effectively
+    }, []);
 
     useEffect(() => {
-        if (timeLeft === 0) {
+        if (countdown > 0 && !isPaused) {
+            const timer = setTimeout(() => setCountdown(c => c - 1), 1000);
+            return () => clearTimeout(timer);
+        } else if (countdown === 0) {
             startGame();
         }
-    }, [timeLeft]);
+    }, [countdown, isPaused]);
 
     const shuffleAndPick = () => {
         if (!totalPool || totalPool.length === 0) return;
 
-        // Pick 20 distinct random words
-        // Simple shuffle algorithm
+        // Shuffle full pool
         const pool = [...totalPool];
         for (let i = pool.length - 1; i > 0; i--) {
             const j = Math.floor(Math.random() * (i + 1));
@@ -60,120 +58,178 @@ export const WordPreviewScreen = ({ navigation, route }: any) => {
         }
 
         LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
-        setDisplayedWords(pool.slice(0, 20));
+        setDisplayedWords(pool.slice(0, 30)); // Pick 30 words
     };
 
     const startGame = () => {
-        navigation.navigate('Game', { category, words: displayedWords });
+        navigation.navigate('Game', { category, words: displayedWords, duration: gameDuration });
     };
 
+    const TimeOption = ({ seconds, label }: { seconds: number, label: string }) => (
+        <TouchableOpacity
+            style={[styles.timeOption, gameDuration === seconds && styles.timeOptionSelected]}
+            onPress={() => setGameDuration(seconds)}
+            activeOpacity={0.7}
+        >
+            <AppText style={[styles.timeText, gameDuration === seconds && styles.timeTextSelected]}>
+                {label}
+            </AppText>
+        </TouchableOpacity>
+    );
+
     return (
-        <Container style={styles.container}>
-            <View style={styles.header}>
-                <AppText variant="subheader" centered style={styles.title}>{category}</AppText>
-                <AppText variant="caption" centered style={styles.subtitle}>Memoriza las palabras</AppText>
-                <AppText variant="display" centered style={{
-                    ...styles.timer,
-                    color: timeLeft <= 5 ? theme.colors.error : theme.colors.text
-                }}>
-                    {timeLeft}
-                </AppText>
-            </View>
+        <ImageBackground
+            source={require('../../assets/background_colombia.png')}
+            style={styles.background}
+            resizeMode="cover"
+        >
+            <Container style={styles.container}>
+                <View style={styles.header}>
+                    <AppText variant="subheader" centered style={styles.title}>{category}</AppText>
+                    <AppText variant="caption" centered style={{ color: '#eee' }}>{t('memorize', countdown)}</AppText>
+                </View>
 
+                <View style={styles.configContainer}>
+                    <AppText style={styles.label}>{t('game_duration')}</AppText>
+                    <View style={styles.timeSelector}>
+                        <TimeOption seconds={60} label="60s" />
+                        <TimeOption seconds={90} label="90s" />
+                        <TimeOption seconds={120} label="120s" />
+                        <TimeOption seconds={180} label="180s" />
+                    </View>
+                </View>
 
-            <View style={styles.previewContainer}>
-                <ScrollView contentContainerStyle={styles.wordsGrid} showsVerticalScrollIndicator={false}>
-                    {displayedWords.length === 0 ? (
-                        <View style={styles.emptyContainer}>
-                            <AppText style={styles.emptyText}>No hay palabras disponibles para esta categoría.</AppText>
-                        </View>
-                    ) : (
-                        displayedWords.map((word, index) => (
-                            <View key={index} style={styles.wordTag}>
-                                <AppText style={styles.wordText}>{word}</AppText>
+                <View style={[styles.previewContainer, { backgroundColor: 'rgba(0,0,0,0.5)' }]}>
+                    <AppText style={styles.previewLabel}>{t('words_round')}</AppText>
+                    <ScrollView contentContainerStyle={styles.wordsGrid} showsVerticalScrollIndicator={false}>
+                        {displayedWords.length === 0 ? (
+                            <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', height: 200 }}>
+                                <AppText style={{ color: '#ccc', textAlign: 'center' }}>{t('no_words')}</AppText>
                             </View>
-                        ))
-                    )}
-                </ScrollView>
-            </View>
+                        ) : (
+                            displayedWords.map((item, index) => {
+                                const wordText = typeof item === 'string' ? item : item.word;
+                                return (
+                                    <View key={index} style={styles.wordTag}>
+                                        <AppText style={styles.wordText}>{wordText}</AppText>
+                                    </View>
+                                )
+                            })
+                        )}
+                    </ScrollView>
+                </View>
 
-            <View style={styles.actions}>
-                <Button
-                    title="🔄 Barajar"
-                    onPress={shuffleAndPick}
-                    variant="secondary"
-                    style={{ marginBottom: spacing.m }}
-                />
-                <Button
-                    title="▶️ ¡Hágale!"
-                    onPress={startGame}
-                />
-            </View>
-        </Container>
+                <View style={styles.actions}>
+                    <Button
+                        title={t('shuffle')}
+                        onPress={shuffleAndPick}
+                        variant="secondary"
+                        style={{ marginBottom: 16, backgroundColor: '#003893', borderColor: '#003893' }}
+                    />
+                    <Button
+                        title={t('start', gameDuration)}
+                        onPress={startGame}
+                        style={{ backgroundColor: '#CE1126', borderColor: '#CE1126' }}
+                    />
+                </View>
+            </Container>
+        </ImageBackground>
     );
 };
 
 const styles = StyleSheet.create({
+    background: {
+        flex: 1,
+        width: '100%',
+        height: '100%',
+    },
     container: {
-        padding: spacing.l,
-        paddingTop: spacing.xxl,
+        padding: 20,
+        paddingTop: 50,
+        backgroundColor: 'transparent',
     },
     header: {
-        marginBottom: spacing.l,
-        alignItems: 'center',
+        marginBottom: 10,
     },
     title: {
-        color: theme.colors.accent,
-        marginBottom: spacing.xs,
+        fontSize: 24,
+        color: '#FFD700',
+        marginBottom: 4,
     },
-    subtitle: {
-        color: theme.colors.textSecondary,
+    configContainer: {
+        marginBottom: 15,
+        backgroundColor: 'rgba(0,0,0,0.2)',
+        padding: 10,
+        borderRadius: 12,
     },
-    timer: {
-        marginTop: spacing.s,
-        fontSize: 48, // Big timer
-        fontWeight: '800',
+    label: {
+        fontSize: 14,
+        color: '#aaa',
+        marginBottom: 8,
+        textAlign: 'center'
+    },
+    timeSelector: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        gap: 8,
+    },
+    timeOption: {
+        flex: 1,
+        paddingVertical: 8,
+        backgroundColor: 'rgba(255,255,255,0.05)',
+        borderRadius: 8,
+        alignItems: 'center',
+        borderWidth: 1,
+        borderColor: '#555',
+    },
+    timeOptionSelected: {
+        backgroundColor: '#FFD700',
+        borderColor: '#FFD700',
+    },
+    timeText: {
+        fontSize: 14,
+        color: '#eee',
+        fontWeight: 'bold',
+    },
+    timeTextSelected: {
+        color: '#000',
     },
     previewContainer: {
         flex: 1,
-        backgroundColor: theme.colors.surfaceHighlight, // Slightly lighter than background
-        borderRadius: theme.borderRadius.l,
-        padding: spacing.m,
-        marginBottom: spacing.l,
+        backgroundColor: 'rgba(0,0,0,0.5)',
+        borderRadius: 16,
+        padding: 16,
+        marginBottom: 16,
         borderWidth: 1,
-        borderColor: theme.colors.border,
+        borderColor: '#333',
+    },
+    previewLabel: {
+        fontSize: 12,
+        color: '#888',
+        marginBottom: 10,
+        textTransform: 'uppercase',
+        letterSpacing: 1,
     },
     wordsGrid: {
         flexDirection: 'row',
         flexWrap: 'wrap',
         justifyContent: 'center',
-        gap: spacing.s,
+        gap: 8,
     },
     wordTag: {
-        backgroundColor: theme.colors.surface,
-        paddingVertical: spacing.s,
-        paddingHorizontal: spacing.m,
-        borderRadius: theme.borderRadius.s,
+        backgroundColor: '#333',
+        paddingVertical: 8,
+        paddingHorizontal: 12,
+        borderRadius: 8,
         borderWidth: 1,
-        borderColor: theme.colors.border,
+        borderColor: '#444',
     },
     wordText: {
         fontSize: 14,
-        color: theme.colors.text,
+        color: '#FFF',
         fontWeight: '600',
-    },
-    emptyContainer: {
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-        height: 200,
-    },
-    emptyText: {
-        color: theme.colors.textMuted,
-        textAlign: 'center',
     },
     actions: {
         justifyContent: 'flex-end',
     }
 });
-

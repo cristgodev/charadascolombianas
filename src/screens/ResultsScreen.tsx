@@ -1,11 +1,8 @@
 import React from 'react';
-import { View, StyleSheet } from 'react-native';
+import { View, StyleSheet, ImageBackground, BackHandler } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import * as ScreenOrientation from 'expo-screen-orientation';
 import { Container, AppText, Button } from '../components';
-import { theme, spacing } from '../theme';
-
-
 
 export const ResultsScreen = ({ navigation, route }: any) => {
     // Safely access params
@@ -15,101 +12,112 @@ export const ResultsScreen = ({ navigation, route }: any) => {
         React.useCallback(() => {
             // Enforce Portrait when this screen is focused
             ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.PORTRAIT_UP);
+
+            const onBackPress = () => {
+                navigation.popToTop();
+                return true;
+            };
+
+            const subscription = BackHandler.addEventListener('hardwareBackPress', onBackPress);
+
+            return () => subscription.remove();
         }, [])
     );
 
-
     return (
-        <Container centered style={styles.container}>
-            <AppText variant="display" style={styles.header}>¡Se Acabó!</AppText>
+        <ImageBackground
+            source={require('../../assets/background_colombia.png')}
+            style={styles.background}
+            resizeMode="cover"
+        >
+            <Container centered style={styles.container}>
+                <AppText variant="display" style={styles.header}>¡Se Acabó!</AppText>
 
-            <View style={styles.scoreContainer}>
-                <AppText style={styles.scoreLabel}>Puntaje</AppText>
-                <AppText style={styles.scoreValue} adjustsFontSizeToFit numberOfLines={1}>
-                    {score}/{total}
-                </AppText>
-            </View>
+                <View style={styles.scoreContainer}>
+                    <AppText style={styles.scoreLabel}>Puntaje</AppText>
+                    <AppText style={styles.scoreValue} adjustsFontSizeToFit numberOfLines={1}>
+                        {score}/{total}
+                    </AppText>
+                </View>
 
-            <View style={styles.buttonGroup}>
-                {videoUri ? (
+                {videoUri && (
                     <Button
-                        title="📹 Guardar / Ver Video"
+                        title="🎬 Ver Video del Juego"
                         onPress={() => navigation.navigate('VideoReview', { videoUri, category, score, total, wordHistory })}
-                        variant="primary"
-                        style={styles.mainButton}
+                        variant="secondary"
+                        style={{ width: '80%', marginBottom: 16, backgroundColor: '#003893', borderColor: '#003893' }}
                     />
-                ) : (
-                    <AppText style={styles.noVideoText}>Video no disponible</AppText>
                 )}
 
                 <Button
                     title="🔄 Jugar Otra Vez"
-                    onPress={() => navigation.navigate('CategorySelection')}
-                    style={styles.actionButton}
-                    variant="secondary"
+                    onPress={() => navigation.reset({
+                        index: 1,
+                        routes: [{ name: 'Home' }, { name: 'CategorySelection' }],
+                    })}
+                    style={{ width: '80%', marginBottom: 16, backgroundColor: '#CE1126', borderColor: '#CE1126' }}
+                    variant="primary"
                 />
 
                 <Button
                     title="🏠 Inicio"
                     variant="outline"
-                    onPress={() => navigation.navigate('Home')}
-                    style={styles.actionButton}
+                    onPress={() => navigation.popToTop()}
+                    style={{ width: '80%' }}
                 />
-            </View>
-        </Container>
+            </Container>
+        </ImageBackground>
     );
 };
 
 const styles = StyleSheet.create({
+    background: {
+        flex: 1,
+        width: '100%',
+        height: '100%',
+    },
     container: {
-        paddingVertical: spacing.xl,
-        paddingHorizontal: spacing.l,
+        backgroundColor: 'transparent',
+        paddingVertical: 20,
+        paddingHorizontal: 20,
+        justifyContent: 'center',
+        alignItems: 'center',
+        flex: 1
     },
     header: {
-        marginBottom: spacing.l,
-        color: theme.colors.accent,
+        marginBottom: 30,
+        color: '#FFD700',
         textAlign: 'center',
+        fontSize: 40,
+        fontWeight: 'bold',
+        textShadowColor: 'rgba(0,0,0,0.5)',
+        textShadowOffset: { width: 2, height: 4 },
+        textShadowRadius: 5
     },
     scoreContainer: {
         alignItems: 'center',
         justifyContent: 'center',
-        marginVertical: spacing.xl,
-        padding: spacing.xl,
-        backgroundColor: theme.colors.surface,
-        borderRadius: theme.borderRadius.xl,
+        marginBottom: 40,
+        padding: 30,
+        backgroundColor: 'rgba(0,0,0,0.3)',
+        borderRadius: 30,
         width: '100%',
-        borderWidth: 1,
-        borderColor: theme.colors.border,
-        // Glow effect
-        ...theme.shadows.glow,
+        borderWidth: 2,
+        borderColor: '#FCD116',
     },
     scoreLabel: {
-        fontSize: 20,
-        color: theme.colors.textSecondary,
+        fontSize: 24,
+        color: '#EEE',
         textTransform: 'uppercase',
         letterSpacing: 4,
-        marginBottom: spacing.s,
+        marginBottom: 10,
     },
     scoreValue: {
         fontSize: 80,
         lineHeight: 90,
         fontWeight: '800',
-        color: theme.colors.text,
-    },
-    buttonGroup: {
-        width: '100%',
-        gap: spacing.m,
-        marginTop: spacing.m,
-    },
-    mainButton: {
-        height: 56,
-    },
-    actionButton: {
-        width: '100%',
-    },
-    noVideoText: {
-        opacity: 0.5,
-        marginBottom: spacing.l,
-        textAlign: 'center',
+        color: '#FFF',
+        textShadowColor: 'purple',
+        textShadowRadius: 10
     }
 });
