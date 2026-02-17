@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useMemo, useCallback } from 'react';
 import { useColorScheme } from 'react-native';
 import { theme as defaultTheme, Theme, palette } from '../theme';
 
@@ -27,27 +27,36 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         setIsDark(systemScheme === 'dark');
     }, [systemScheme]);
 
-    const toggleTheme = () => {
+    const toggleTheme = useCallback(() => {
         setIsDark((prev) => !prev);
-    };
+    }, []);
 
-    const dynamicColors = {
-        ...palette,
-        // Since we are enforcing a specific "Premium Dark" look for this game version,
-        // we map the generic keys directly to our palette values.
-        background: palette.background,
-        surface: palette.surface,
-        text: palette.text,
-        textSecondary: palette.textSecondary,
-    };
+    const themeContextValue = useMemo(() => {
+        const dynamicColors = {
+            ...palette,
+            // Since we are enforcing a specific "Premium Dark" look for this game version,
+            // we map the generic keys directly to our palette values.
+            background: isDark ? palette.background : '#FFFFFF', // Simple toggle logic if we ever want light mode
+            surface: isDark ? palette.surface : '#F0F0F0',
+            text: isDark ? palette.text : '#000000',
+            textSecondary: isDark ? palette.textSecondary : '#666666',
+        };
 
-    const computedTheme = {
-        ...defaultTheme,
-        colors: dynamicColors,
-    };
+        const computedTheme = {
+            ...defaultTheme,
+            colors: dynamicColors,
+        };
+
+        return {
+            theme: computedTheme,
+            isDark,
+            toggleTheme,
+            colors: dynamicColors,
+        };
+    }, [isDark, toggleTheme]);
 
     return (
-        <ThemeContext.Provider value={{ theme: computedTheme, isDark, toggleTheme, colors: dynamicColors }}>
+        <ThemeContext.Provider value={themeContextValue}>
             {children}
         </ThemeContext.Provider>
     );

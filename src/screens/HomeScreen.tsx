@@ -1,21 +1,23 @@
 import React from 'react';
-import { View, StyleSheet, TouchableOpacity, ImageBackground, Dimensions } from 'react-native';
+import { View, StyleSheet, TouchableOpacity, ImageBackground, useWindowDimensions } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { Container, AppText, Button } from '../components';
-
-const { width, height } = Dimensions.get('window');
+import { Container, Button } from '../components';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export const HomeScreen = ({ navigation }: any) => {
+    const { width, height } = useWindowDimensions();
+    const insets = useSafeAreaInsets();
+
     return (
         <ImageBackground
             source={require('../../assets/portada_inicio.png')}
-            style={styles.background}
-            resizeMode="stretch"
+            style={[styles.background, { width, height }]}
+            resizeMode="cover" // Changed to cover to avoid distortion
         >
             <Container noPadding style={styles.overlayContainer}>
                 {/* Settings Top Right */}
                 <TouchableOpacity
-                    style={styles.settingsButtonTop}
+                    style={[styles.settingsButtonTop, { top: insets.top + 20, right: 20 }]}
                     onPress={() => navigation.navigate('Settings')}
                     activeOpacity={0.7}
                 >
@@ -23,7 +25,7 @@ export const HomeScreen = ({ navigation }: any) => {
                 </TouchableOpacity>
 
                 {/* Play Button Bottom Center */}
-                <View style={styles.bottomContainer}>
+                <View style={[styles.bottomContainer, { bottom: insets.bottom + 40 }]}>
                     <Button
                         title="JUGAR"
                         onPress={() => navigation.navigate('CategorySelection')}
@@ -38,8 +40,6 @@ export const HomeScreen = ({ navigation }: any) => {
 const styles = StyleSheet.create({
     background: {
         flex: 1,
-        width: '100%',
-        height: '100%',
     },
     overlayContainer: {
         flex: 1,
@@ -47,8 +47,6 @@ const styles = StyleSheet.create({
     },
     settingsButtonTop: {
         position: 'absolute',
-        top: 50,
-        right: 20,
         width: 44,
         height: 44,
         borderRadius: 22,
@@ -59,7 +57,6 @@ const styles = StyleSheet.create({
     },
     bottomContainer: {
         position: 'absolute',
-        bottom: 50,
         left: 0,
         right: 0,
         alignItems: 'center',

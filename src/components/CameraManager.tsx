@@ -1,5 +1,5 @@
 import React, { forwardRef, useImperativeHandle, useState, useEffect, useRef } from 'react';
-import { View, StyleSheet, Platform } from 'react-native';
+import { View, StyleSheet, Platform, AppState, AppStateStatus } from 'react-native';
 import { CameraView, useCameraPermissions, useMicrophonePermissions } from 'expo-camera';
 import * as MediaLibrary from 'expo-media-library';
 
@@ -23,6 +23,27 @@ export const CameraManager = forwardRef<CameraManagerHandle, CameraManagerProps>
 
     const onRecordingFinishedRef = useRef(props.onRecordingFinished);
     const onRecordingStartRef = useRef(props.onRecordingStart);
+
+    // AppState handling to stop recording if backgrounded
+    useEffect(() => {
+        const subscription = AppState.addEventListener('change', nextAppState => {
+            if (nextAppState.match(/inactive|background/) && isRecording) {
+                console.log("App going background, stopping recording...");
+                if (cameraRef.current) {
+                    cameraRef.current.stopRecording();
+                    setIsRecording(false);
+                    // Also clear any pending flag
+                    if (pendingRecordingRef.current) {
+                        pendingRecordingRef.current = false;
+                    }
+                }
+            }
+        });
+
+        return () => {
+            subscription.remove();
+        };
+    }, [isRecording]);
 
     useEffect(() => {
         onRecordingFinishedRef.current = props.onRecordingFinished;

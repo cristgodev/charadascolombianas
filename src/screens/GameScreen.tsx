@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useFocusEffect } from '@react-navigation/native';
 import { View, StyleSheet, TouchableOpacity } from 'react-native';
 import { Container, AppText, Button, CameraManager, CameraManagerHandle } from '../components';
 import { useGameTimer, useAccelerometer } from '../hooks';
@@ -47,16 +48,30 @@ export const GameScreen = ({ navigation, route }: any) => {
         setWords(list);
     }, [initialWords]);
 
-    useEffect(() => {
-        // Lock to Landscape
-        ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.LANDSCAPE);
-        return () => {
-            // Force back to Portrait on exit
-            ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.PORTRAIT_UP);
-            // Ensure volume is reset incase of unexpected unmount
-            setVolumeModifier(1.0);
-        };
-    }, []);
+    useFocusEffect(
+        React.useCallback(() => {
+            const lockLandscape = async () => {
+                try {
+                    await ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.LANDSCAPE);
+                } catch (e) {
+                    console.error("Failed to lock landscape", e);
+                }
+            };
+            lockLandscape();
+
+            return () => {
+                const lockPortrait = async () => {
+                    try {
+                        await ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.PORTRAIT_UP);
+                        setVolumeModifier(1.0);
+                    } catch (e) {
+                        console.error("Failed to lock portrait", e);
+                    }
+                };
+                lockPortrait();
+            };
+        }, [])
+    );
 
     const onTimeEnd = () => {
         finishGame(score, wordsAnswered);
@@ -249,6 +264,7 @@ export const GameScreen = ({ navigation, route }: any) => {
                     <TouchableOpacity
                         style={{ marginTop: 20, padding: 10, backgroundColor: 'rgba(255,255,255,0.2)', borderRadius: 20 }}
                         onPress={shuffleMusic}
+                        activeOpacity={0.7}
                     >
                         <AppText style={{ fontSize: 16 }}>🎵 Cambiar Música</AppText>
                     </TouchableOpacity>

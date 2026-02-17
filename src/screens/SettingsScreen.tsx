@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, StyleSheet, TouchableOpacity, ImageBackground } from 'react-native';
 import Slider from '@react-native-community/slider';
 import { Container, AppText, Button } from '../components';
 import { useLanguage } from '../context/LanguageContext';
@@ -22,6 +22,7 @@ export const SettingsScreen = ({ navigation }: any) => {
             <TouchableOpacity
                 style={[styles.toggleBtn, value ? styles.toggleOn : styles.toggleOff]}
                 onPress={onToggle}
+                activeOpacity={0.7}
             >
                 <AppText style={styles.toggleText}>{value ? t('on') : t('off')}</AppText>
             </TouchableOpacity>
@@ -45,60 +46,68 @@ export const SettingsScreen = ({ navigation }: any) => {
     );
 
     return (
-        <Container centered style={styles.container}>
-            <AppText variant="header" style={styles.header}>{t('settings')}</AppText>
+        <ImageBackground
+            source={require('../../assets/background_colombia.png')}
+            style={{ flex: 1, width: '100%', height: '100%' }}
+            resizeMode="cover"
+        >
+            <Container centered style={[styles.container, { backgroundColor: 'transparent' }]}>
+                <AppText variant="header" style={styles.header}>{t('settings')}</AppText>
 
-            <View style={styles.section}>
-                <ToggleRow label={`🎶 ${t('music')}`} value={enableMusic} onToggle={toggleMusic} />
-                {enableMusic && (
-                    <>
-                        <AppText style={styles.subLabel}>{t('volume_music')} ({(musicVolume * 100).toFixed(0)}%)</AppText>
-                        <VolumeSlider value={musicVolume} onValueChange={setMusicVolume} />
-                    </>
-                )}
+                <View style={styles.section}>
+                    <ToggleRow label={`🎶 ${t('music')}`} value={enableMusic} onToggle={toggleMusic} />
+                    {enableMusic && (
+                        <>
+                            <AppText style={styles.subLabel}>{t('volume_music')} ({(musicVolume * 100).toFixed(0)}%)</AppText>
+                            <VolumeSlider value={musicVolume} onValueChange={setMusicVolume} />
+                        </>
+                    )}
 
-                <View style={styles.divider} />
-                <ToggleRow label={`📹 ${t('music_in_video')}`} value={enableMusicInVideo} onToggle={toggleMusicInVideo} />
-                <View style={styles.divider} />
+                    <View style={styles.divider} />
+                    <ToggleRow label={`📹 ${t('music_in_video')}`} value={enableMusicInVideo} onToggle={toggleMusicInVideo} />
+                    <View style={styles.divider} />
 
-                <ToggleRow label={`🔊 ${t('sound_effects')}`} value={enableSFX} onToggle={toggleSFX} />
-                {enableSFX && (
-                    <>
-                        <AppText style={styles.subLabel}>{t('volume_sfx')} ({(sfxVolume * 100).toFixed(0)}%)</AppText>
-                        <VolumeSlider value={sfxVolume} onValueChange={setSFXVolume} />
-                    </>
-                )}
+                    <ToggleRow label={`🔊 ${t('sound_effects')}`} value={enableSFX} onToggle={toggleSFX} />
+                    {enableSFX && (
+                        <>
+                            <AppText style={styles.subLabel}>{t('volume_sfx')} ({(sfxVolume * 100).toFixed(0)}%)</AppText>
+                            <VolumeSlider value={sfxVolume} onValueChange={setSFXVolume} />
+                        </>
+                    )}
 
-                <View style={styles.divider} />
-                <ToggleRow label={`📳 ${t('vibration')}`} value={enableVibration} onToggle={toggleVibration} />
-            </View>
-
-            <View style={styles.section}>
-                <AppText style={styles.label}>{t('language')}</AppText>
-                <View style={styles.row}>
-                    <TouchableOpacity
-                        style={[styles.option, language === 'es' && styles.selected]}
-                        onPress={() => setLanguage('es')}
-                    >
-                        <AppText style={[styles.optionText, language === 'es' && styles.selectedText]}>Espanol 🇨🇴</AppText>
-                    </TouchableOpacity>
-
-                    <TouchableOpacity
-                        style={[styles.option, language === 'en' && styles.selected]}
-                        onPress={() => setLanguage('en')}
-                    >
-                        <AppText style={[styles.optionText, language === 'en' && styles.selectedText]}>English 🇺🇸</AppText>
-                    </TouchableOpacity>
+                    <View style={styles.divider} />
+                    <ToggleRow label={`📳 ${t('vibration')}`} value={enableVibration} onToggle={toggleVibration} />
                 </View>
-            </View>
 
-            <Button
-                title={t('back')}
-                onPress={() => navigation.goBack()}
-                variant="outline"
-                style={styles.backButton}
-            />
-        </Container>
+                <View style={styles.section}>
+                    <AppText style={styles.label}>{t('language')}</AppText>
+                    <View style={styles.row}>
+                        <TouchableOpacity
+                            style={[styles.option, language === 'es' && styles.selected]}
+                            onPress={() => setLanguage('es')}
+                            activeOpacity={0.7}
+                        >
+                            <AppText style={[styles.optionText, language === 'es' && styles.selectedText]}>Espanol 🇨🇴</AppText>
+                        </TouchableOpacity>
+
+                        <TouchableOpacity
+                            style={[styles.option, language === 'en' && styles.selected]}
+                            onPress={() => setLanguage('en')}
+                            activeOpacity={0.7}
+                        >
+                            <AppText style={[styles.optionText, language === 'en' && styles.selectedText]}>English 🇺🇸</AppText>
+                        </TouchableOpacity>
+                    </View>
+                </View>
+
+                <Button
+                    title={t('back')}
+                    onPress={() => navigation.goBack()}
+                    variant="outline"
+                    style={styles.backButton}
+                />
+            </Container>
+        </ImageBackground>
     );
 };
 

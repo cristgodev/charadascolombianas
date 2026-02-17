@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, ViewStyle, StyleSheet, StatusBar } from 'react-native';
+import { View, ViewStyle, StyleSheet, StatusBar, StyleProp } from 'react-native';
 import { SafeAreaView, SafeAreaViewProps } from 'react-native-safe-area-context';
 import { useTheme } from '../context/ThemeContext';
 
@@ -7,7 +7,7 @@ interface ContainerProps extends SafeAreaViewProps {
     children: React.ReactNode;
     centered?: boolean;
     noPadding?: boolean;
-    style?: ViewStyle;
+    style?: StyleProp<ViewStyle>;
 }
 
 export const Container: React.FC<ContainerProps> = ({

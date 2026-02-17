@@ -22,6 +22,7 @@ export const palette = {
 
     // UI Elements
     border: '#FCD116', // Default border is now Yellow
+    lightGray: '#E0E0E0', // Disabled state
 };
 
 export const spacing = {

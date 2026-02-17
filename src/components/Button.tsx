@@ -11,6 +11,7 @@ interface ButtonProps {
     disabled?: boolean;
     loading?: boolean;
     style?: ViewStyle;
+    textStyle?: object; // Allow custom text style
 }
 
 export const Button: React.FC<ButtonProps> = ({
@@ -20,6 +21,7 @@ export const Button: React.FC<ButtonProps> = ({
     disabled,
     loading,
     style,
+    textStyle,
 }) => {
     const { colors, theme } = useTheme();
 
@@ -64,7 +66,7 @@ export const Button: React.FC<ButtonProps> = ({
             {loading ? (
                 <ActivityIndicator color={getTextColor()} />
             ) : (
-                <AppText variant="button" style={{ color: getTextColor() }}>
+                <AppText variant="button" style={[{ color: getTextColor() }, textStyle]}>
                     {title}
                 </AppText>
             )}
