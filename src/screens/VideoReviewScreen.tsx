@@ -21,6 +21,8 @@ export const VideoReviewScreen = ({ navigation, route }: any) => {
     const videoRef = useRef<Video>(null);
     const [status, setStatus] = useState<any>({});
     const [showMusicPicker, setShowMusicPicker] = useState(false);
+    const [isVideoSaved, setIsVideoSaved] = useState(false);
+    const [isSaving, setIsSaving] = useState(false);
 
     // Logic for word history (from HEAD) - kept purely for logic, not rendering yet to avoid style conflicts
     const [currentWord, setCurrentWord] = useState<string>("");
@@ -58,18 +60,23 @@ export const VideoReviewScreen = ({ navigation, route }: any) => {
     };
 
     const handleSave = async () => {
+        if (isSaving || isVideoSaved) return;
+
         try {
+            setIsSaving(true);
             const { status } = await MediaLibrary.requestPermissionsAsync(true);
             if (status !== 'granted') {
                 Alert.alert(t('error'), "Necesitamos permiso para guardar el video.");
                 return;
             }
 
-            const asset = await MediaLibrary.createAssetAsync(videoUri);
-            await MediaLibrary.createAlbumAsync("CharadesApp", asset, true);
-            Alert.alert(t('success'), "Video original guardado en galería.");
+            await MediaLibrary.saveToLibraryAsync(videoUri);
+            setIsVideoSaved(true);
+            Alert.alert(t('success'), t('video_saved'));
         } catch (error: any) {
             Alert.alert(t('error'), "No se pudo guardar.");
+        } finally {
+            setIsSaving(false);
         }
     };
 
@@ -156,13 +163,15 @@ export const VideoReviewScreen = ({ navigation, route }: any) => {
                         <AppText style={styles.controlText}>{t('music_picker_title')}</AppText>
                     </TouchableOpacity>
 
-                    <TouchableOpacity
-                        style={[styles.controlButton, styles.saveButton]}
-                        onPress={handleSave}
-                    >
-                        <Ionicons name="save-outline" size={24} color="#003893" />
-                        <AppText style={[styles.controlText, styles.saveButtonText]}>Guardar</AppText>
-                    </TouchableOpacity>
+                    {!isVideoSaved && (
+                        <TouchableOpacity
+                            style={[styles.controlButton, styles.saveButton]}
+                            onPress={handleSave}
+                        >
+                            <Ionicons name="save-outline" size={24} color="#003893" />
+                            <AppText style={[styles.controlText, styles.saveButtonText]}>Guardar</AppText>
+                        </TouchableOpacity>
+                    )}
                 </View>
 
                 {/* Music Picker Modal */}
